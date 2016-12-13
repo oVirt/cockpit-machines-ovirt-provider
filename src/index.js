@@ -14,14 +14,8 @@ TODO:
  https://engine.local/ovirt-engine/web-ui/authorizedRedirect.jsp?redirectUrl=https%3A%2F%2F192.168.122.101%3A9090%2Fmachines%23token%3DTOKEN
  */
 
-// TODO: read dynamically from config file
-var CONFIG = {
-    debug: true, // set to false to tunrn off debug logging
-    OVIRT_BASE_URL: 'https://engine.local/ovirt-engine',
-};
-
 function logDebug (msg) {
-    if (CONFIG.debug) {
+    if (OVIRT_PROVIDER.CONFIG.debug) {
         console.log('OVIRT_PROVIDER: ' + msg);
     }
 }
@@ -30,19 +24,21 @@ function logError (msg) {
     console.error('OVIRT_PROVIDER: ' + msg);
 }
 
-var OVIRT_LOGIN = {
-    token: undefined
-};
-
 var OVIRT_PROVIDER = {
     name: 'oVirt',
-    _login (baseUrl) {
+    token: null,
+    CONFIG: {// TODO: read dynamically from config file
+      debug: true, // set to false to turn off debug logging
+      OVIRT_BASE_URL: 'https://engine.local/ovirt-engine',
+    },
+
+    _login: function (baseUrl) {
         var location = window.location;
         var tokenStart = location.hash.indexOf("token=");
         if (tokenStart >= 0) {
             var token = location.hash.substr(tokenStart + "token=".length);
             logDebug("_login(): token found in params: " + token);
-            OVIRT_LOGIN.token = token;
+            OVIRT_PROVIDER.token = token;
             return true;
         } else { // TODO: redirect to SSO is not working because of CSP
 /*            // redirect to oVirt's SSO
@@ -55,15 +51,32 @@ var OVIRT_PROVIDER = {
         return false;
     },
 
+    _ovirtApiGet: function (resource) {
+      return $.ajax({
+        method: 'GET',
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/xml',
+          'Authorization': 'Bearer ' + OVIRT_PROVIDER.token
+        },
+        url: OVIRT_PROVIDER.CONFIG.OVIRT_BASE_URL + '/api/' + resource
+      });
+    },
+
     /**
      * Initialize the Provider
      */
-    init () {
+    init: function () {
         logDebug('init() called');
-        return OVIRT_PROVIDER._login(CONFIG.OVIRT_BASE_URL);
+        return OVIRT_PROVIDER._login(OVIRT_PROVIDER.CONFIG.OVIRT_BASE_URL);
     },
 
-    GET_VM ({ lookupId: name }) {
+  /**
+   *
+   * @param payload { lookupId: name }
+   * @constructor
+   */
+    GET_VM: function ( payload ) {
 /*        logDebug(`${this.name}.GET_VM()`);
 
         return dispatch => {
@@ -93,23 +106,16 @@ var OVIRT_PROVIDER = {
     /**
      * Initiate read of all VMs
      */
-    GET_ALL_VMS () {
+    GET_ALL_VMS: function () {
         logDebug('GET_ALL_VMS() called');
         return dispatch => {
-            $.ajax({
-                method: 'GET',
-                headers: {
-                    'Accept': 'application/json',
-                    'Content-Type': 'application/xml',
-                    'Authorization': 'Bearer ' + OVIRT_LOGIN.token
-                },
-                url: CONFIG.OVIRT_BASE_URL + '/api/vms'
-            }).done(data => {
-                logDebug('GET_ALL_VMS successful: ' + JSON.stringify(data));// TODO
-            }).fail(data => {
-                logError('GET_ALL_VMS failed: ' + data);
-            });
-        };
+          OVIRT_PROVIDER._ovirtApiGet('vms')
+            .done( function (data) {
+              logDebug('GET_ALL_VMS successful: ' + JSON.stringify(data));// TODO
+          }).fail(function (data) {
+            logError('GET_ALL_VMS failed: ' + data);
+          });
+      };
 /*        return dispatch => {
             spawnScript({
                 script: `virsh ${VMS_CONFIG.Virsh.ConnectionParams.join(' ')} -r list --all | awk '$1 == "-" || $1+0 > 0 { print $2 }'`
