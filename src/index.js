@@ -12,6 +12,8 @@ TODO:
 
  encoded url:
  https://engine.local/ovirt-engine/web-ui/authorizedRedirect.jsp?redirectUrl=https%3A%2F%2F192.168.122.101%3A9090%2Fmachines%23token%3DTOKEN
+
+ check error status code: 401 - remove token and reissue login
  */
 
 function logDebug (msg) {
@@ -31,6 +33,11 @@ var OVIRT_PROVIDER = {
       debug: true, // set to false to turn off debug logging
       OVIRT_BASE_URL: 'https://engine.local/ovirt-engine',
     },
+    actions: { //  this list is for reference only, it's expected to be replaced by init()
+      delayRefresh: function () {}, // delayPolling(getAllVms())
+      deleteUnlistedVMs: function (vmNames) {},
+      updateOrAddVm: function (vm) {},
+    },
 
     _login: function (baseUrl) {
         var location = window.location;
@@ -40,7 +47,7 @@ var OVIRT_PROVIDER = {
             logDebug("_login(): token found in params: " + token);
             OVIRT_PROVIDER.token = token;
             return true;
-        } else { // TODO: redirect to SSO is not working because of CSP
+        } else { // TODO: redirect to SSO is recently not working because of CSP
 /*            // redirect to oVirt's SSO
             var url = baseUrl + '/web-ui/authorizedRedirect.jsp?redirectUrl=' + location + '#token=TOKEN';
             logDebug("_login(): missing oVirt SSO token, redirecting to SSO: " + url);
@@ -63,44 +70,92 @@ var OVIRT_PROVIDER = {
       });
     },
 
+  _ovirtApiPost: function (resource, input) {
+    return $.ajax({
+      method: 'POST',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/xml',
+        'Authorization': 'Bearer ' + OVIRT_PROVIDER.token
+      },
+      url: OVIRT_PROVIDER.CONFIG.OVIRT_BASE_URL + '/api/' + resource,
+      data: input
+    });
+  },
+
+    _adaptVm: function (ovirtVm) {
+      var vcpus = function (ovirtCpu) {
+        var t = ovirtCpu.topology;
+        return t.sockets * t.cores * t.threads;
+      };
+      var currentMemory = function (ovirtMem) {
+        return ovirtMem / 1024; // to KiB
+      };
+      var state = function (ovirtStatus) {
+        return ovirtStatus;
+      };
+
+      return {
+        id: ovirtVm.id,
+        name: ovirtVm.name,
+        state: state(ovirtVm.status),
+        osType: ovirtVm.os.type,
+        fqdn: ovirtVm.fqdn,
+        uptime: -1, // TODO
+        currentMemory: currentMemory(ovirtVm.memory),
+        rssMemory: undefined, // TODO
+        vcpus: vcpus(ovirtVm.cpu),
+        autostart: undefined,
+        actualTimeInMs: undefined, // TODO
+        cpuTime: undefined // TODO
+      };
+    },
     /**
      * Initialize the Provider
      */
-    init: function () {
+    init: function (actionCreators) {
         logDebug('init() called');
-        return OVIRT_PROVIDER._login(OVIRT_PROVIDER.CONFIG.OVIRT_BASE_URL);
+      OVIRT_PROVIDER.actions = actionCreators;
+      return OVIRT_PROVIDER._login(OVIRT_PROVIDER.CONFIG.OVIRT_BASE_URL);
     },
+/*
+  UNASSIGNED,
+  DOWN,
+  UP,
+  POWERING_UP,
+  PAUSED,
+  MIGRATING,
+  UNKNOWN,
+  NOT_RESPONDING,
+  WAIT_FOR_LAUNCH,
+  REBOOT_IN_PROGRESS,
+  SAVING_STATE,
+  RESTORING_STATE,
+  SUSPENDED,
+  IMAGE_LOCKED,
+  POWERING_DOWN */
+  canReset: function (state) {
+    return state && (state === 'up' || state === 'migrating');
+  },
+  canShutdown: function (state) {
+    return OVIRT_PROVIDER.canReset(state) || (state === 'reboot_in_progress' || state === 'paused' || state === 'powering_up');
+  },
+  isRunning: function (state) {
+    return OVIRT_PROVIDER.canReset(state);
+  },
+  canRun: function (state) {
+    return state && (state === 'down' || state === 'paused' || state === 'suspended');
+  },
 
   /**
-   *
+   * Get single VM
    * @param payload { lookupId: name }
    * @constructor
    */
     GET_VM: function ( payload ) {
-/*        logDebug(`${this.name}.GET_VM()`);
-
-        return dispatch => {
-            if (!isEmpty(name)) {
-                return spawnVirshReadOnly('dumpxml', name).then(domXml => {
-                    parseDumpxml(dispatch, domXml);
-                    return spawnVirshReadOnly('dominfo', name);
-                }).then(domInfo => {
-                    if (isRunning(parseDominfo(dispatch, name, domInfo))) {
-                        return spawnVirshReadOnly('dommemstat', name);
-                    }
-                }).then(dommemstat => {
-                    if (dommemstat) { // is undefined if vm is not running
-                        parseDommemstat(dispatch, name, dommemstat);
-                        return spawnVirshReadOnly('domstats', name);
-                    }
-                }).then(domstats => {
-                    if (domstats) {
-                        parseDomstats(dispatch, name, domstats);
-                    }
-                }); // end of GET_VM return
-            }
-        };
-        */
+      logDebug('GET_VM() called');
+      logError('OVIRT_PROVIDER.GET_VM() is not implemented'); // should not be needed
+      return function (dispatch) {};
     },
 
     /**
@@ -108,70 +163,76 @@ var OVIRT_PROVIDER = {
      */
     GET_ALL_VMS: function () {
         logDebug('GET_ALL_VMS() called');
-        return dispatch => {
+        return function (dispatch) {
           OVIRT_PROVIDER._ovirtApiGet('vms')
-            .done( function (data) {
-              logDebug('GET_ALL_VMS successful: ' + JSON.stringify(data));// TODO
-          }).fail(function (data) {
+            .done( function (data) { // data is demarshalled JSON
+              logDebug('GET_ALL_VMS successful');
+
+              var vmNames = [];
+              data.vm.forEach( function (ovirtVm) {
+                var vm = OVIRT_PROVIDER._adaptVm(ovirtVm);
+                vmNames.push(vm.name);
+                dispatch(OVIRT_PROVIDER.actions.updateOrAddVm(vm));
+              });
+
+              // remove undefined domains
+              dispatch(OVIRT_PROVIDER.actions.deleteUnlistedVMs(vmNames));
+
+              // keep polling AFTER all VM details have been read (avoid overlap)
+              dispatch(OVIRT_PROVIDER.actions.delayRefresh());
+            }).fail(function (data) {
             logError('GET_ALL_VMS failed: ' + data);
           });
       };
-/*        return dispatch => {
-            spawnScript({
-                script: `virsh ${VMS_CONFIG.Virsh.ConnectionParams.join(' ')} -r list --all | awk '$1 == "-" || $1+0 > 0 { print $2 }'`
-            }).then(output => {
-                const vmNames = output.trim().split(/\r?\n/);
-                vmNames.forEach((vmName, index) => {
-                    vmNames[index] = vmName.trim();
-                });
-                logDebug(`GET_ALL_VMS: vmNames: ${JSON.stringify(vmNames)}`);
-
-                // remove undefined domains
-                dispatch(deleteUnlistedVMs(vmNames));
-
-                // read VM details
-                return cockpit.all(vmNames.map((name) => dispatch(getVm(name))));
-            }).then(() => {
-                // keep polling AFTER all VM details have been read (avoid overlap)
-                dispatch(delayPolling(getAllVms()));
-            });
-        };
-        */
     },
 
-    SHUTDOWN_VM ({ name }) {
-        /*
-        logDebug(`${this.name}.SHUTDOWN_VM(${name}):`);
-        return spawnVirsh('SHUTDOWN_VM', 'shutdown', name);
-        */
+  /**
+   * Call `shut down` on the VM
+   * @param payload { name, id }
+   * @constructor
+   */
+    SHUTDOWN_VM: function (payload) {
+      var name = payload.name;
+      var id = payload.id;
+      logDebug('OVIRT_PROVIDER.SHUTDOWN_VM(name="' + name + '", id="' + id + '")');
+      return OVIRT_PROVIDER._ovirtApiPost('vms/'+id+'/shutdown', '<action />');
     },
 
-    FORCEOFF_VM ({ name }) {
-        /*
-        logDebug(`${this.name}.FORCEOFF_VM(${name}):`);
-        return spawnVirsh('FORCEOFF_VM', 'destroy', name);
-        */
+  /**
+   * Force shut down on the VM.
+   *
+   * @param payload { name, id }
+   * @constructor
+   */
+  FORCEOFF_VM: function (payload) {
+      var name = payload.name;
+      var id = payload.id;
+      logDebug('OVIRT_PROVIDER.FORCEOFF_VM(name="' + name + '", id="' + id + '")');
+      return OVIRT_PROVIDER._ovirtApiPost('vms/'+id+'/stop', '<action />');
     },
 
-    REBOOT_VM ({ name }) {
-        /*
-        logDebug(`${this.name}.REBOOT_VM(${name}):`);
-        return spawnVirsh('REBOOT_VM', 'reboot', name);
-        */
+    REBOOT_VM: function (payload) {
+      var name = payload.name;
+      var id = payload.id;
+      logDebug('OVIRT_PROVIDER.REBOOT_VM(name="' + name + '", id="' + id + '")');
+
+      return function (dispatch) {
+        return OVIRT_PROVIDER._ovirtApiPost('vms/' + id + '/reboot', '<action />');
+      };
     },
 
-    FORCEREBOOT_VM ({ name }) {
-        /*
-        logDebug(`${this.name}.FORCEREBOOT_VM(${name}):`);
-        return spawnVirsh('FORCEREBOOT_VM', 'reset', name);
-        */
+    FORCEREBOOT_VM: function (payload) {
+      return OVIRT_PROVIDER.REBOOT_VM(payload); // TODO: implement 'force'
     },
 
-    START_VM ({ name }) {
-        /*
-        logDebug(`${this.name}.START_VM(${name}):`);
-        return spawnVirsh('START_VM', 'start', name);
-        */
+    START_VM: function (payload) {
+      var name = payload.name;
+      var id = payload.id;
+      logDebug('OVIRT_PROVIDER.START_VM(name="' + name + '", id="' + id + '")');
+
+      return function (dispatch) {
+        return OVIRT_PROVIDER._ovirtApiPost('vms/' + id + '/start', '<action />');
+      };
     }
 };
 
