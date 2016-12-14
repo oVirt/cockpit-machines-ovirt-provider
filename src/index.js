@@ -23,6 +23,8 @@ TODO:
     https://[ENGINE_HOST]/ovirt-engine/web-ui/authorizedRedirect.jsp?redirectUrl=https://[COCKPI_HOST]:9090/machines__hash__token=TOKEN
  */
 
+var _ = function (str) { return str; } // TODO: implement localization
+
 function logDebug (msg) {
   if (OVIRT_PROVIDER.CONFIG.debug) {
     console.log('OVIRT_PROVIDER: ' + msg);
@@ -51,8 +53,10 @@ var OVIRT_PROVIDER = {
     var cockpitHost = loc.substring(0, loc.indexOf('/cockpit/'));
     var url = 'https://[ENGINE_HOST]/ovirt-engine/web-ui/authorizedRedirect.jsp?redirectUrl=' + cockpitHost + '/machines__hash__token=TOKEN';
     var div = document.createElement('div');
-    div.innerHTML = '<p><span class="pficon-warning-triangle-o" />&nbsp;oVirt External Provider is installed on this host but since oVirt login token is missing, the default Libvirt provider is used instead.<br/>' +
-      'If you want otherwise, ' +
+    // TODO: if it can't be resolved, then translation will be required
+    div.innerHTML = '<p><span class="pficon-warning-triangle-o" />' +
+      '&nbsp;The oVirt External Provider is installed but default Libvirt is used instead since oVirt login token is missing.<br/>' +
+      'If you want otherwise, please' +
       '<ul><li>either land to cockpit from oVirt User Portal</li>' +
       '<li>or specify ENGINE_HOST in following link: ' + url + '</li></ul>' +
       '</p>';
@@ -180,6 +184,23 @@ var OVIRT_PROVIDER = {
   canRun: function (state) {
     return state && (state === 'down' || state === 'paused' || state === 'suspended');
   },
+  vmStateMap: { // TODO: localization needed
+    unassigned: undefined,
+    down: {className: 'fa fa-arrow-circle-o-down icon-1x-vms', title: 'The VM is down.'},
+    up: {className: 'pficon pficon-ok icon-1x-vms', title: _("The VM is running.")},
+    powering_up: {className: 'glyphicon glyphicon-wrench icon-1x-vms', title: _('The VM is going up.')},
+    paused: {className: 'pficon pficon-pause icon-1x-vms', title: _('The VM is paused.')},
+    migrating: {className: 'pficon pficon-route icon-1x-vms', title: _('The VM is migrating.')},
+    unknown: undefined,
+    not_responding: {className: 'pficon pficon-error-circle-o icon-1x-vms', title: _("The VM is not responding.")},
+    wait_for_launch: {className: 'fa fa-clock-o icon-1x-vms', title: _('The VM is scheduled for launch.')},
+    reboot_in_progress: undefined, // TODO
+    saving_state: undefined,
+    restoring_state: undefined,
+    suspended: {className: 'pficon pficon-pause icon-1x-vms', title: _('The VM is suspended.')},
+    image_locked: {className: 'fa fa-lock icon-1x-vms', title: _("The VM's image is locked.")},
+    powering_down: {className: 'glyphicon glyphicon-wrench icon-1x-vms', title: _('The VM is going down.')},
+  },
 
   /**
    * Get single VM
@@ -230,7 +251,9 @@ var OVIRT_PROVIDER = {
     var name = payload.name;
     var id = payload.id;
     logDebug('OVIRT_PROVIDER.SHUTDOWN_VM(name="' + name + '", id="' + id + '")');
-    return OVIRT_PROVIDER._ovirtApiPost('vms/' + id + '/shutdown', '<action />');
+    return function (dispatch) {
+      return OVIRT_PROVIDER._ovirtApiPost('vms/' + id + '/shutdown', '<action />');
+    };
   },
 
   /**
@@ -243,7 +266,9 @@ var OVIRT_PROVIDER = {
     var name = payload.name;
     var id = payload.id;
     logDebug('OVIRT_PROVIDER.FORCEOFF_VM(name="' + name + '", id="' + id + '")');
-    return OVIRT_PROVIDER._ovirtApiPost('vms/' + id + '/stop', '<action />');
+    return function (dispatch) {
+      return OVIRT_PROVIDER._ovirtApiPost('vms/' + id + '/stop', '<action />');
+    };
   },
 
   REBOOT_VM: function (payload) {
