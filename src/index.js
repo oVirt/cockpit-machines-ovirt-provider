@@ -48,19 +48,24 @@ var OVIRT_PROVIDER = {
     updateOrAddVm: function (vm) {},
   },
 
-  _renderDisclaimer: function () { // TODO: if only automatic redirect works ... But CSP
+  _renderDisclaimer: function (text) { // TODO: if only automatic redirect works ... But CSP
+    text = text ? text : _('The oVirt External Provider is installed but default Libvirt is used instead since oVirt' +
+      ' login token is missing.<br/>If you want otherwise, please');
     var loc = window.location.href;
     var cockpitHost = loc.substring(0, loc.indexOf('/cockpit/'));
     var url = 'https://[ENGINE_HOST]/ovirt-engine/web-ui/authorizedRedirect.jsp?redirectUrl=' + cockpitHost + '/machines__hash__token=TOKEN';
     var div = document.createElement('div');
     // TODO: if it can't be resolved, then translation will be required
     div.innerHTML = '<p><span class="pficon-warning-triangle-o" />' +
-      '&nbsp;The oVirt External Provider is installed but default Libvirt is used instead since oVirt login token is missing.<br/>' +
-      'If you want otherwise, please' +
+      '&nbsp;' + text +
       '<ul><li>either land to cockpit from oVirt User Portal</li>' +
       '<li>or specify ENGINE_HOST in following link: ' + url + '</li></ul>' +
       '</p>';
     document.body.insertBefore(div, document.body.firstChild);
+    window.setTimeout(function () {document.body.removeChild(div);}, 10000);
+  },
+  _renderUnauthorized: function () { // TODO: if only automatic redirect works ... But CSP
+    OVIRT_PROVIDER._renderDisclaimer(_('Authorization expired. Log in again, please'));
   },
   _login: function (baseUrl) {
     var location = window.location;
@@ -105,6 +110,11 @@ var OVIRT_PROVIDER = {
         'Authorization': 'Bearer ' + OVIRT_PROVIDER.token
       },
       url: OVIRT_PROVIDER.CONFIG.OVIRT_BASE_URL + '/api/' + resource
+    }).fail(function (data) {
+      logError('HTTP GET failed: ' + JSON.stringify(data));
+      if (data.status === 401) { // Unauthorized
+        OVIRT_PROVIDER._renderUnauthorized(); // TODO: or better redirect to SSO
+      }
     });
   },
 
@@ -118,6 +128,11 @@ var OVIRT_PROVIDER = {
       },
       url: OVIRT_PROVIDER.CONFIG.OVIRT_BASE_URL + '/api/' + resource,
       data: input
+    }).fail(function (data) {
+      logError('HTTP POST failed: ' + JSON.stringify(data));
+      if (data.status === 401) { // Unauthorized
+        OVIRT_PROVIDER._renderUnauthorized(); // TODO: or better redirect to SSO
+      }
     });
   },
 
@@ -236,9 +251,7 @@ var OVIRT_PROVIDER = {
 
           // keep polling AFTER all VM details have been read (avoid overlap)
           dispatch(OVIRT_PROVIDER.actions.delayRefresh());
-        }).fail(function (data) {
-        logError('GET_ALL_VMS failed: ' + data);
-      });
+        });
     };
   },
 
