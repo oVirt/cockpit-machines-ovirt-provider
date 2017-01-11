@@ -1,0 +1,9 @@
+{
+  "menu": {
+    "vms": {
+      "label": "Virtual Machines (oVirt)",
+      "path": "index.html"
+    }
+  },
+  "content-security-policy": "default-src 'self';connect-src 'self' ws: wss: https://engine.local/ovirt-engine/"
+}
