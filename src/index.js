@@ -13,23 +13,15 @@
 
  Installation:
   - copy src/* under /usr/share/cockpit/machines/provider
-  - adjust shell.override.json (OVIRT_BASE_URL) and merge it with /usr/share/cockpit/shell/override.json
-     - example: "content-security-policy": "default-src 'self';frame-src https://engine.local/ovirt-engine/"
-     - TODO: update shell/override.json automatically during installation
- - adjust machines.override.json (OVIRT_BASE_URL) and put it under/usr/share/cockpit/machines/override.json
-     - example: "content-security-policy": "default-src 'self';connect-src 'self' ws: wss: https://engine.local/ovirt-engine/"
-     - TODO: update machines/override.json automatically during installation
-  - [root@engine]# engine-config -s CORSSupport=true
-  - Either https://gerrit.ovirt.org/#/c/68529/
-    or [root@engine]# engine-config -s 'CORSAllowedOrigins=*' # or more particular
-TODO:  - Switch-off X-FRAME-OPTIONS on engine: enginesso.war/web.xml: HeaderFilter:
-     <init-param>
-      <param-name>X-FRAME-OPTIONS</param-name>
-      <param-value>ALLOW-FROM *</param-value>
-     </init-param>
+  - call
+     /usr/share/cockpit/machines/provider [MY_ENGINE_URL]
+     # example: /usr/share/cockpit/machines/provider https://engine.mydomain.com/ovirt-engine/
+  - [root@engine]# engine-config -s CORSSupport=true # To turn on the CORS support for the REST API
+
+  - WAIT TILL MERGE: Either https://gerrit.ovirt.org/#/c/68529/
+    OR WORKAROUND [root@engine]# engine-config -s 'CORSAllowedOrigins=*' # or more particular
 
  TODO: since the web-ui/authorizedRedirect.jsp, ovirt-web-ui.0.1.1-2 (part of ovirt-engine 4.1) - considering moving similar code to enginess.war
- TODO: CorsFilter: make suffixes configurable
  */
 
 var _ = function (str) { return str; } // TODO: implement localization
@@ -66,6 +58,8 @@ var OVIRT_PROVIDER = {
     OVIRT_PROVIDER.actions = actionCreators;
     OVIRT_PROVIDER.nextProvider = nextProvider;
     OVIRT_PROVIDER.vmStateMap = nextProvider.vmStateMap; // reuse Libvirt since it is used for data retrieval
+
+    // TODO: Read the config file!
 
     return OVIRT_PROVIDER._login(OVIRT_PROVIDER.CONFIG.OVIRT_BASE_URL);
   },
@@ -206,7 +200,7 @@ var OVIRT_PROVIDER = {
       url: OVIRT_PROVIDER.CONFIG.OVIRT_BASE_URL + '/api/' + resource
     }).fail(function (data) {
       logError('HTTP GET failed: ' + JSON.stringify(data));
-      // TODO: clear token from sessionStorage and refresh --> SSO will pass through
+      // TODO: clear token from sessionStorage and refresh --> SSO will pass again
     });
   },
 
@@ -222,7 +216,7 @@ var OVIRT_PROVIDER = {
       data: input
     }).fail(function (data) {
       logError('HTTP POST failed: ' + JSON.stringify(data));
-      // TODO: clear token from sessionStorage and refresh --> SSO will pass through
+      // TODO: clear token from sessionStorage and refresh --> SSO will pass again
     });
   },
 };
