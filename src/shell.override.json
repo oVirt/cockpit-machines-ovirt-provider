@@ -1,3 +1,0 @@
-{
-  "content-security-policy": "default-src 'self';frame-src https://engine.local/ovirt-engine/"
-}
