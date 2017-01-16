@@ -14,14 +14,14 @@
  Installation:
   - copy src/* under /usr/share/cockpit/machines/provider
   - call
-     /usr/share/cockpit/machines/provider [MY_ENGINE_URL]
-     # example: /usr/share/cockpit/machines/provider https://engine.mydomain.com/ovirt-engine/
+     /usr/share/cockpit/machines/provider/install.sh [MY_ENGINE_URL] # to generate/update 3 config files
+     # example: /usr/share/cockpit/machines/provider/install.sh https://engine.mydomain.com/ovirt-engine/
   - [root@engine]# engine-config -s CORSSupport=true # To turn on the CORS support for the REST API
 
   - WAIT TILL MERGE: Either https://gerrit.ovirt.org/#/c/68529/
-    OR WORKAROUND [root@engine]# engine-config -s 'CORSAllowedOrigins=*' # or more particular
+    OR WORKAROUND [root@engine]# engine-config -s 'CORSAllowedOrigins=*' # or more particular list of allowed hosts
 
- TODO: since the web-ui/authorizedRedirect.jsp, ovirt-web-ui.0.1.1-2 (part of ovirt-engine 4.1) - considering moving similar code to enginess.war
+ TODO: since the web-ui/authorizedRedirect.jsp, ovirt-web-ui.0.1.1-2 (part of ovirt-engine 4.1) - recently considering moving similar code to enginess.war
  */
 
 var _ = function (str) { return str; } // TODO: implement localization
@@ -36,10 +36,37 @@ function logError (msg) {
   console.error('OVIRT_PROVIDER: ' + msg);
 }
 
+// --- Start of Polyfill ---
+if (typeof Object.assign != 'function') {
+  Object.assign = function (target, varArgs) { // .length of function is 2
+    'use strict';
+    if (target == null) { // TypeError if undefined or null
+      throw new TypeError('Cannot convert undefined or null to object');
+    }
+
+    var to = Object(target);
+
+    for (var index = 1; index < arguments.length; index++) {
+      var nextSource = arguments[index];
+
+      if (nextSource != null) { // Skip over if undefined or null
+        for (var nextKey in nextSource) {
+          // Avoid bugs when hasOwnProperty is shadowed
+          if (Object.prototype.hasOwnProperty.call(nextSource, nextKey)) {
+            to[nextKey] = nextSource[nextKey];
+          }
+        }
+      }
+    }
+    return to;
+  };
+}
+// --- End of Polyfill ---
 var OVIRT_PROVIDER = {
   name: 'oVirt',
   token: null,
-  CONFIG: {// TODO: read following configuration dynamically from provider's config file
+  CONFIG_FILE_URL: 'provider/machines-ovirt.config',
+  CONFIG: { // will be dynamically replaced by content of CONFIG_FILE_URL in init()
     debug: true, // set to false to turn off the debug logging
     OVIRT_BASE_URL: 'https://engine.local/ovirt-engine',
   },
@@ -59,8 +86,7 @@ var OVIRT_PROVIDER = {
     OVIRT_PROVIDER.nextProvider = nextProvider;
     OVIRT_PROVIDER.vmStateMap = nextProvider.vmStateMap; // reuse Libvirt since it is used for data retrieval
 
-    // TODO: Read the config file!
-
+    OVIRT_PROVIDER._readConfiguration();
     return OVIRT_PROVIDER._login(OVIRT_PROVIDER.CONFIG.OVIRT_BASE_URL);
   },
 
@@ -189,6 +215,38 @@ var OVIRT_PROVIDER = {
     return false;
   },
 
+  _readConfiguration: function () {
+    if (!window.$) {
+      logError('JQuery not found! The configuration is not read, using default.');
+      return ;
+    }
+    var configUrl = 'provider/machines-ovirt.config';
+    window.$.ajax({
+      url: OVIRT_PROVIDER.CONFIG_FILE_URL,
+      type: 'GET',
+      data: {},
+      async: true // Expected by next flow!
+    }).done( function (data) {
+      var config = JSON.parse(data);
+      Object.assign(OVIRT_PROVIDER.CONFIG, config);
+
+      OVIRT_PROVIDER.CONFIG.OVIRT_BASE_URL = OVIRT_PROVIDER.CONFIG.OVIRT_BASE_URL.trim();
+      if (OVIRT_PROVIDER.CONFIG.OVIRT_BASE_URL.charAt(OVIRT_PROVIDER.CONFIG.OVIRT_BASE_URL.length - 1) === '/') {
+        OVIRT_PROVIDER.CONFIG.OVIRT_BASE_URL = OVIRT_PROVIDER.CONFIG.OVIRT_BASE_URL
+          .substring(0, OVIRT_PROVIDER.CONFIG.OVIRT_BASE_URL.length - 1);
+      }
+
+      logDebug('Configuration retrieved, result: ' + JSON.stringify(OVIRT_PROVIDER.CONFIG));
+    }).fail( function (e) {
+        if (e && e.status === 404) {
+          logError('Configuration of cockpit-machines-ovirt-provider not found. It means, the install script has not been called yet.');
+          // TODO: dialog to gather the engine url and call the "provider/install.sh [URL]"
+          return ;
+        }
+        logError('Configuration failed to load: ' + JSON.stringify(e));
+      });
+  },
+
   _ovirtApiGet: function (resource) {
     return $.ajax({
       method: 'GET',
@@ -205,6 +263,7 @@ var OVIRT_PROVIDER = {
   },
 
   _ovirtApiPost: function (resource, input) {
+    logDebug('Post, token: ' + OVIRT_PROVIDER.token);
     return $.ajax({
       method: 'POST',
       headers: {

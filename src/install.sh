@@ -13,9 +13,11 @@
 #      This script will be automatically called during rpm installation once the ENGINE URL can be read on the VDSM host somehow.
 #
 
+# TODO: Check for failure (like missing dirs or file permissions)
+
 function usage() {
   echo Usage: $0 '[ENGINE_URL]'
-  echo Example: $0 https://engine.mydomain.com/ovirt-engine/
+  echo Example: $0 https://engine.mydomain.com/ovirt-engine
 }
 
 function checkParams() {
