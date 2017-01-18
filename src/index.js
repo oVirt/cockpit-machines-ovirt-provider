@@ -9,20 +9,7 @@
 
  General notes:
    - data are still retrieved from Libvirt, only the active operations are redirected to oVirt
-
-
- Installation:
-  - copy src/* under /usr/share/cockpit/machines/provider
-  - call
-     /usr/share/cockpit/machines/provider/install.sh [MY_ENGINE_URL] # to generate/update 3 config files
-     # example: /usr/share/cockpit/machines/provider/install.sh https://engine.mydomain.com/ovirt-engine/
-  - [root@engine]# engine-config -s CORSSupport=true # To turn on the CORS support for the REST API
-
-  - WAIT TILL MERGE: Either https://gerrit.ovirt.org/#/c/68529/
-    OR WORKAROUND [root@engine]# engine-config -s 'CORSAllowedOrigins=*' # or more particular list of allowed hosts
-
- TODO: since the web-ui/authorizedRedirect.jsp, ovirt-web-ui.0.1.1-2 (part of ovirt-engine 4.1) - recently considering moving similar code to enginess.war
- */
+*/
 
 var _ = function (str) { return str; } // TODO: implement localization
 
