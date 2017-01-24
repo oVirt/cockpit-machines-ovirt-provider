@@ -11,7 +11,7 @@
    - data are still retrieved from Libvirt, only the active operations are redirected to oVirt
 */
 
-var _ = function (str) { return str; } // TODO: implement localization
+// var _ = function (str) { return str; } // TODO: implement localization
 
 function logDebug (msg) {
   if (OVIRT_PROVIDER.CONFIG.debug) {
@@ -267,12 +267,12 @@ var OVIRT_PROVIDER = {
   },
 };
 
-function init () {
+function initOvirtProvider () {
   console.log('Registering the oVirt provider');
   window.EXTERNAL_PROVIDER = OVIRT_PROVIDER;
 }
 
-init();
+initOvirtProvider();
 
 // --------------------------------------
 /*

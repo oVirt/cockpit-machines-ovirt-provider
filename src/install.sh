@@ -17,7 +17,7 @@
 
 function usage() {
   echo Usage: $0 '[ENGINE_URL]'
-  echo Example: $0 https://engine.mydomain.com/ovirt-engine
+  echo Example: $0 https://engine.mydomain.com/ovirt-engine/
 }
 
 function checkParams() {
@@ -74,6 +74,9 @@ function updateMachinesManifest() {
 }
 
 ENGINE_URL=$1
+ENGINE_URL=$(echo "$ENGINE_URL"|sed 's/\/$//g')
+ENGINE_URL=$ENGINE_URL"/"
+
 checkParams
 updateMachinesManifest
 generateProviderConfig
