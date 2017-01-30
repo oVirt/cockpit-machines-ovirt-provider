@@ -2,6 +2,8 @@
  To have this oVirt external provider for Cockpit/machines working,
  the oVirt SSO token must be provided to the cockpit/machines plugin.
 
+ Future development: Use webpack + babel to generate this index.js file. Ensure the API is met.
+
  Parameters to cockpit packages can't be provided via '?' in the URL, so the hash '#' sign is used as workaround.
 
  Example:
@@ -13,14 +15,18 @@
 
 // var _ = function (str) { return str; } // TODO: implement localization
 
-function logDebug (msg) {
-  if (OVIRT_PROVIDER.CONFIG.debug) {
-    console.log('OVIRT_PROVIDER: ' + msg);
+if (typeof window.logDebug != 'function') {
+  window.logDebug = function (msg) {
+    if (OVIRT_PROVIDER.CONFIG.debug) {
+      console.log('OVIRT_PROVIDER: ' + msg);
+    }
   }
 }
 
-function logError (msg) {
-  console.error('OVIRT_PROVIDER: ' + msg);
+if (typeof window.logError != 'function') {
+  window.logError = function (msg) {
+    console.error('OVIRT_PROVIDER: ' + msg);
+  }
 }
 
 // --- Start of Polyfill ---
@@ -73,8 +79,19 @@ var OVIRT_PROVIDER = {
     OVIRT_PROVIDER.nextProvider = nextProvider;
     OVIRT_PROVIDER.vmStateMap = nextProvider.vmStateMap; // reuse Libvirt since it is used for data retrieval
 
-    OVIRT_PROVIDER._readConfiguration();
-    return OVIRT_PROVIDER._login(OVIRT_PROVIDER.CONFIG.OVIRT_BASE_URL);
+    if (!window.$) {
+      logError('JQuery not found! The OVIRT_PROVIDER is not initialized, using default.');
+      return ;
+    }
+
+    if (!window.cockpit) {
+      logError('Cockpit not found! The OVIRT_PROVIDER is not initialized, using default.');
+      return ;
+    }
+
+    return OVIRT_PROVIDER._readConfiguration(function () {
+      return OVIRT_PROVIDER._login(OVIRT_PROVIDER.CONFIG.OVIRT_BASE_URL);
+    });
   },
 
   vmStateMap: null, // see init()
@@ -202,36 +219,83 @@ var OVIRT_PROVIDER = {
     return false;
   },
 
-  _readConfiguration: function () {
-    if (!window.$) {
-      logError('JQuery not found! The configuration is not read, using default.');
-      return ;
-    }
-    var configUrl = 'provider/machines-ovirt.config';
-    window.$.ajax({
+  _readConfiguration: function (onConfigRead) {
+    logDebug("_readConfiguration() called for configUrl=" + OVIRT_PROVIDER.CONFIG_FILE_URL);
+
+    return window.$.ajax({
       url: OVIRT_PROVIDER.CONFIG_FILE_URL,
       type: 'GET',
       data: {},
-      async: true // Expected by next flow!
-    }).done( function (data) {
-      var config = JSON.parse(data);
-      Object.assign(OVIRT_PROVIDER.CONFIG, config);
+      // async: true // Expected by next flow!
+    }).then( // AJAX ok
+      function (data) {
+        logDebug('Configuration file retrieved.');
+        var config = JSON.parse(data);
+        Object.assign(OVIRT_PROVIDER.CONFIG, config);
 
-      OVIRT_PROVIDER.CONFIG.OVIRT_BASE_URL = OVIRT_PROVIDER.CONFIG.OVIRT_BASE_URL.trim();
-      if (OVIRT_PROVIDER.CONFIG.OVIRT_BASE_URL.charAt(OVIRT_PROVIDER.CONFIG.OVIRT_BASE_URL.length - 1) === '/') {
-        OVIRT_PROVIDER.CONFIG.OVIRT_BASE_URL = OVIRT_PROVIDER.CONFIG.OVIRT_BASE_URL
-          .substring(0, OVIRT_PROVIDER.CONFIG.OVIRT_BASE_URL.length - 1);
-      }
+        OVIRT_PROVIDER.CONFIG.OVIRT_BASE_URL = OVIRT_PROVIDER.CONFIG.OVIRT_BASE_URL.trim();
+        if (OVIRT_PROVIDER.CONFIG.OVIRT_BASE_URL.charAt(OVIRT_PROVIDER.CONFIG.OVIRT_BASE_URL.length - 1) === '/') {
+          OVIRT_PROVIDER.CONFIG.OVIRT_BASE_URL = OVIRT_PROVIDER.CONFIG.OVIRT_BASE_URL
+            .substring(0, OVIRT_PROVIDER.CONFIG.OVIRT_BASE_URL.length - 1);
+        }
 
-      logDebug('Configuration retrieved, result: ' + JSON.stringify(OVIRT_PROVIDER.CONFIG));
-    }).fail( function (e) {
+        logDebug('Configuration parsed, using merged result: ' + JSON.stringify(OVIRT_PROVIDER.CONFIG));
+        return OVIRT_PROVIDER._deferFunctionCall(onConfigRead);
+    }, function (e) { // AJAX failed
         if (e && e.status === 404) {
           logError('Configuration of cockpit-machines-ovirt-provider not found. It means, the install script has not been called yet.');
-          // TODO: dialog to gather the engine url and call the "provider/install.sh [URL]"
-          return ;
+          return OVIRT_PROVIDER._showPluginInstallationDialog();
         }
         logError('Configuration failed to load: ' + JSON.stringify(e));
       });
+  },
+
+  _showPluginInstallationDialog: function () {
+    var dialogHtml =
+      '<div class="modal" id="ovirt-provider-install-dialog" tabindex="-1" role="dialog" data-backdrop="static">' +
+       '<div class="modal-dialog">' +
+          '<div class="modal-content">' +
+              '<div class="modal-header">' +
+                  '<h4 class="modal-title">Install oVirt External Provider</h4>' +
+              '</div>' +
+              '<div class="modal-body">' +
+                  '<table class="form-table-ct">' +
+                      '<tr>' +
+                          '<td class="top"><label class="control-label" for="ovirt-provider-install-dialog-engine-url">Engine URL: </label></td>' +
+                          '<td><input id="ovirt-provider-install-dialog-engine-url" class="form-control" type="text"></td>' +
+                      '</tr>' +
+                  '</table>' +
+              '</div>' +
+              '<div class="modal-footer">' +
+                  '<button class="btn btn-default" id="ovirt-provider-install-dialog-cancel" data-dismiss="modal">Not now</button>' +
+                  '<button class="btn btn-primary" id="ovirt-provider-install-dialog-install-button">Install</button>' +
+              '</div>' +
+          '</div>' +
+      '</div>' +
+    '</div>';
+
+    $("body").append(dialogHtml);
+
+    var deferred = cockpit.defer();
+    $("#ovirt-provider-install-dialog-cancel").on("click", function() {
+      deferred.reject();
+    });
+    $("#ovirt-provider-install-dialog-install-button").on("click", function() {
+      // TODO: call the install.sh script
+      $("#ovirt-provider-install-dialog").modal("hide");
+      deferred.resolve();
+    });
+
+    $("#ovirt-provider-install-dialog").modal({keyboard: false});
+    return deferred.promise;
+  },
+
+  _deferFunctionCall: function( func ) {
+    var deferred = cockpit.defer();
+    if (func()) {
+      return deferred.resolve().promise;
+    }
+    return deferred.reject().promise;
   },
 
   _ovirtApiGet: function (resource) {
