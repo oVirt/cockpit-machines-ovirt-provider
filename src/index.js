@@ -59,6 +59,8 @@ var OVIRT_PROVIDER = {
   name: 'oVirt',
   token: null,
   CONFIG_FILE_URL: 'provider/machines-ovirt.config',
+//  INSTALL_SCRIPT: '/usr/share/cockpit/machines/provider/install.sh',
+  INSTALL_SCRIPT: '/root/.local/share/cockpit/machines/provider/install.sh',
   CONFIG: { // will be dynamically replaced by content of CONFIG_FILE_URL in init()
     debug: true, // set to false to turn off the debug logging
     OVIRT_BASE_URL: 'https://engine.local/ovirt-engine',
@@ -251,39 +253,26 @@ var OVIRT_PROVIDER = {
   },
 
   _showPluginInstallationDialog: function () {
-    var dialogHtml =
-      '<div class="modal" id="ovirt-provider-install-dialog" tabindex="-1" role="dialog" data-backdrop="static">' +
-       '<div class="modal-dialog">' +
-          '<div class="modal-content">' +
-              '<div class="modal-header">' +
-                  '<h4 class="modal-title">Install oVirt External Provider</h4>' +
-              '</div>' +
-              '<div class="modal-body">' +
-                  '<table class="form-table-ct">' +
-                      '<tr>' +
-                          '<td class="top"><label class="control-label" for="ovirt-provider-install-dialog-engine-url">Engine URL: </label></td>' +
-                          '<td><input id="ovirt-provider-install-dialog-engine-url" class="form-control" type="text"></td>' +
-                      '</tr>' +
-                  '</table>' +
-              '</div>' +
-              '<div class="modal-footer">' +
-                  '<button class="btn btn-default" id="ovirt-provider-install-dialog-cancel" data-dismiss="modal">Not now</button>' +
-                  '<button class="btn btn-primary" id="ovirt-provider-install-dialog-install-button">Install</button>' +
-              '</div>' +
-          '</div>' +
-      '</div>' +
-    '</div>';
-
-    $("body").append(dialogHtml);
+    $("body").append(getInstallationDialogHtml());
 
     var deferred = cockpit.defer();
     $("#ovirt-provider-install-dialog-cancel").on("click", function() {
       deferred.reject();
     });
     $("#ovirt-provider-install-dialog-install-button").on("click", function() {
-      // TODO: call the install.sh script
-      $("#ovirt-provider-install-dialog").modal("hide");
-      deferred.resolve();
+      var engineUrl = $("#ovirt-provider-install-dialog-engine-url").val()
+      window.cockpit.spawn([OVIRT_PROVIDER.INSTALL_SCRIPT, engineUrl], { "superuser": "try" })
+        .done(function () {
+          $("#ovirt-provider-install-dialog").modal("hide");
+          logDebug('oVirt Provider installation script successful');
+          window.top.location.reload(true);
+          // window.location.reload(true);
+          deferred.resolve()
+        })
+        .fail(function (ex, data) {
+          logError('oVirt Provider installation script failed. Exception="'+JSON.stringify(ex)+'", output="'+JSON.stringify(data)+'"');
+          deferred.reject();
+        });
     });
 
     $("#ovirt-provider-install-dialog").modal({keyboard: false});
@@ -342,3 +331,28 @@ initOvirtProvider();
 /*
  https://engine.local/ovirt-engine/web-ui/authorizedRedirect.jsp?redirectUrl=https://192.168.122.101:9090/machines__hash__token=TOKEN
  */
+function getInstallationDialogHtml() {
+    return '<div class="modal" id="ovirt-provider-install-dialog" tabindex="-1" role="dialog" data-backdrop="static">' +
+       '<div class="modal-dialog">' +
+          '<div class="modal-content">' +
+              '<div class="modal-header">' +
+                  '<h4 class="modal-title">Finish oVirt External Provider installation</h4>' +
+              '</div>' +
+              '<div class="modal-body">' +
+                  '<p>The oVirt External provider is installed but not yet configured. Please enter Engine URL.</p>' +
+                  '<table class="form-table-ct">' +
+                      '<tr>' +
+                          '<td class="top"><label class="control-label" for="ovirt-provider-install-dialog-engine-url">Engine URL: </label></td>' +
+                          '<td><input id="ovirt-provider-install-dialog-engine-url" class="form-control" type="text" placeholder="https://engine.mydomain.com/ovirt-engine/"></td>' +
+                      '</tr>' +
+                  '</table>' +
+              '</div>' +
+              '<div class="modal-footer">' +
+                  '<button class="btn btn-default" id="ovirt-provider-install-dialog-cancel" data-dismiss="modal">Not now</button>' +
+                  '<button class="btn btn-primary" id="ovirt-provider-install-dialog-install-button">Install</button>' +
+              '</div>' +
+          '</div>' +
+      '</div>' +
+    '</div>';
+}
+
