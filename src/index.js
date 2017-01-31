@@ -271,6 +271,10 @@ var OVIRT_PROVIDER = {
         })
         .fail(function (ex, data) {
           logError('oVirt Provider installation script failed. Exception="'+JSON.stringify(ex)+'", output="'+JSON.stringify(data)+'"');
+
+          var errMsg = "oVirt Provider installation script failed with following output: " + data;
+          $("#ovirt-provider-install-dialog-error").html(errMsg);
+
           deferred.reject();
         });
     });
@@ -346,6 +350,7 @@ function getInstallationDialogHtml() {
                           '<td><input id="ovirt-provider-install-dialog-engine-url" class="form-control" type="text" placeholder="https://engine.mydomain.com/ovirt-engine/"></td>' +
                       '</tr>' +
                   '</table>' +
+                  '<div id="ovirt-provider-install-dialog-error"></div>'+
               '</div>' +
               '<div class="modal-footer">' +
                   '<button class="btn btn-default" id="ovirt-provider-install-dialog-cancel" data-dismiss="modal">Not now</button>' +
