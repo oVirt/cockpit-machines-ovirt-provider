@@ -4,21 +4,32 @@
 With this external provider, the `machines` plugin in Cockpit can redirect actions to oVirt REST API instead of default Libvirt.
  
 # Cockpit-machines External Providers in general 
- Please refer to cockpit-machines [README.md](https://github.com/mareklibra/cockpit/blob/machines.providers/pkg/machines/README.md) for external plugin description.
+ Please refer to cockpit-machines [README.md](https://github.com/mareklibra/cockpit/blob/machines.providers/pkg/machines/README.md) for external plugin description and API which is implemented by this project.
 
+# Build
+ 
+ - git clone https://github.com/mareklibra/cockpit-machines-ovirt-provider.git && cd cockpit-machines-ovirt-provider 
+ - npm i
+ - make
+ 
+ The result can be found under `dist` directory.
+ 
 # Installation
 Please make sure the Cockpit is installed **including support for external providers [1]**.
 
-- `cd [COCKPIT_INSTALL_DIR]/machines && mkdir ./provider`
-- `cp [PROVIDER_SRC]/src/* ./provider/`
-- invoke `./provider/install.sh [ENGINE_URL]` 
-    - leads to creation/update of following config files:
+- as `root` user on the host running the oVirt engine:
+    - `engine-config -s CORSSupport=true` # To turn on the CORS support for the REST API     
+
+
+- `cd [COCKPIT_INSTALL_DIR]/machines && mkdir -p ./provider`
+- `cp [PROVIDER_SRC]/dist/* ./provider/`
+- login into Cockpit as `root` user, enter the `machines` plugin, installation dialog pops-up. Please submit your URL of running oVirt engine 
+    - will lead to creation/update of following config files:
         - cockpit/shell/override.json
         - cockpit/machines/override.json
         - cockpit/machines/provider/machines-ovirt.config
     - in case of failure, please follow instructions by the `install.sh`        
-- as root, on host running the oVirt engine:
-    - `engine-config -s CORSSupport=true` # To turn on the CORS support for the REST API     
+- re-login into Cockpit
 
 The `COCKPIT_INSTALL_DIR` usually refers to `/usr/share/cockpit`.
 
