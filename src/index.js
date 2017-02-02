@@ -2,7 +2,7 @@
  To have this oVirt external provider for Cockpit/machines working,
  the oVirt SSO token must be provided to the cockpit/machines plugin.
 
- Future development: Use webpack + babel to generate this index.js file. Ensure the API is met.
+ TODO: Use webpack + babel to generate this index.js file. Ensure the API is met.
 
  Parameters to cockpit packages can't be provided via '?' in the URL, so the hash '#' sign is used as workaround.
 
@@ -55,12 +55,16 @@ if (typeof Object.assign != 'function') {
   };
 }
 // --- End of Polyfill ---
+
+/**
+ * Implementation of cockpit:machines External Provider API for the oVirt
+ */
 var OVIRT_PROVIDER = {
   name: 'oVirt',
   token: null,
   CONFIG_FILE_URL: 'provider/machines-ovirt.config',
 //  INSTALL_SCRIPT: '/usr/share/cockpit/machines/provider/install.sh',
-  INSTALL_SCRIPT: '/root/.local/share/cockpit/machines/provider/install.sh',
+  INSTALL_SCRIPT: '/root/.local/share/cockpit/machines/provider/install.sh', // TODO: change it!
   CONFIG: { // will be dynamically replaced by content of CONFIG_FILE_URL in init()
     debug: true, // set to false to turn off the debug logging
     OVIRT_BASE_URL: 'https://engine.local/ovirt-engine',
@@ -141,7 +145,7 @@ var OVIRT_PROVIDER = {
   SHUTDOWN_VM: function (payload) {
     var name = payload.name;
     var id = payload.id;
-    logDebug('OVIRT_PROVIDER.SHUTDOWN_VM(name="' + name + '", id="' + id + '")');
+    logDebug('SHUTDOWN_VM(name="' + name + '", id="' + id + '")');
     return function (dispatch) {
       return OVIRT_PROVIDER._ovirtApiPost('vms/' + id + '/shutdown', '<action />');
     };
@@ -156,7 +160,7 @@ var OVIRT_PROVIDER = {
   FORCEOFF_VM: function (payload) {
     var name = payload.name;
     var id = payload.id;
-    logDebug('OVIRT_PROVIDER.FORCEOFF_VM(name="' + name + '", id="' + id + '")');
+    logDebug('FORCEOFF_VM(name="' + name + '", id="' + id + '")');
     return function (dispatch) {
       return OVIRT_PROVIDER._ovirtApiPost('vms/' + id + '/stop', '<action />');
     };
@@ -165,7 +169,7 @@ var OVIRT_PROVIDER = {
   REBOOT_VM: function (payload) {
     var name = payload.name;
     var id = payload.id;
-    logDebug('OVIRT_PROVIDER.REBOOT_VM(name="' + name + '", id="' + id + '")');
+    logDebug('REBOOT_VM(name="' + name + '", id="' + id + '")');
 
     return function (dispatch) {
       return OVIRT_PROVIDER._ovirtApiPost('vms/' + id + '/reboot', '<action />');
@@ -179,7 +183,7 @@ var OVIRT_PROVIDER = {
   START_VM: function (payload) {
     var name = payload.name;
     var id = payload.id;
-    logDebug('OVIRT_PROVIDER.START_VM(name="' + name + '", id="' + id + '")');
+    logDebug('START_VM(name="' + name + '", id="' + id + '")');
 
     return function (dispatch) {
       return OVIRT_PROVIDER._ovirtApiPost('vms/' + id + '/start', '<action />');
@@ -188,7 +192,7 @@ var OVIRT_PROVIDER = {
 
   // --- End of API, private functions follow -------
   _login: function (baseUrl) {
-    logDebug('OVIRT_PROVIDER._login() called');
+    logDebug('_login() called');
 
     var location = window.top.location;
     var tokenStart = location.hash.indexOf("token=");
@@ -235,11 +239,11 @@ var OVIRT_PROVIDER = {
         var config = JSON.parse(data);
         Object.assign(OVIRT_PROVIDER.CONFIG, config);
 
-        OVIRT_PROVIDER.CONFIG.OVIRT_BASE_URL = OVIRT_PROVIDER.CONFIG.OVIRT_BASE_URL.trim();
-        if (OVIRT_PROVIDER.CONFIG.OVIRT_BASE_URL.charAt(OVIRT_PROVIDER.CONFIG.OVIRT_BASE_URL.length - 1) === '/') {
-          OVIRT_PROVIDER.CONFIG.OVIRT_BASE_URL = OVIRT_PROVIDER.CONFIG.OVIRT_BASE_URL
-            .substring(0, OVIRT_PROVIDER.CONFIG.OVIRT_BASE_URL.length - 1);
+        var baseUrl = OVIRT_PROVIDER.CONFIG.OVIRT_BASE_URL.trim();
+        if (baseUrl.charAt(baseUrl.length - 1) === '/') {
+          baseUrl = baseUrl.substring(0, baseUrl.length - 1);
         }
+        OVIRT_PROVIDER.CONFIG.OVIRT_BASE_URL = baseUrl;
 
         logDebug('Configuration parsed, using merged result: ' + JSON.stringify(OVIRT_PROVIDER.CONFIG));
         return OVIRT_PROVIDER._deferFunctionCall(onConfigRead);
@@ -324,12 +328,10 @@ var OVIRT_PROVIDER = {
   },
 };
 
-function initOvirtProvider () {
+(function initOvirtProvider () {
   console.log('Registering the oVirt provider');
   window.EXTERNAL_PROVIDER = OVIRT_PROVIDER;
-}
-
-initOvirtProvider();
+}());
 
 // --------------------------------------
 /*
@@ -360,4 +362,3 @@ function getInstallationDialogHtml() {
       '</div>' +
     '</div>';
 }
-
