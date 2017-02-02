@@ -1,10 +1,8 @@
 import { logDebug, logError } from './helpers.js'
+import { INSTALL_SCRIPT } from './config.js'
 
 const $ = window.$;
 const cockpit = window.cockpit;
-
-// const INSTALL_SCRIPT = '/usr/share/cockpit/machines/provider/install.sh'
-const INSTALL_SCRIPT = '/root/.local/share/cockpit/machines/provider/install.sh' // TODO: change it!
 
 export function showPluginInstallationDialog () {
   $("body").append(getInstallationDialogHtml());

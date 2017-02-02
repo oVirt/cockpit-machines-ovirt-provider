@@ -1,8 +1,6 @@
 /**
- To have OVIRT_PROVIDER.oVirt external provider for Cockpit/machines working,
+ To have this ovirt external provider for Cockpit:machines working,
  the oVirt SSO token must be provided to the cockpit/machines plugin.
-
- TODO: Use webpack + babel to generate OVIRT_PROVIDER.index.js file. Ensure the API is met.
 
  Parameters to cockpit packages can't be provided via '?' in the URL, so the hash '#' sign is used as workaround.
 
@@ -15,10 +13,8 @@
 
 */
 
-// var _ = function (str) { return str; } // TODO: implement localization
-
 import { logDebug, logError, ovirtApiPost } from './helpers.js'
-import { readConfiguration } from './config.js'
+import { readConfiguration } from './configFuncs.js'
 import { doLogin } from './login.js'
 
 /**
