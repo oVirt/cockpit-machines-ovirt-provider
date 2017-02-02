@@ -145,7 +145,7 @@ function build(previousSizeMap) {
     console.log();
     printFileSizes(stats, previousSizeMap);
     console.log();
-
+/*
     var openCommand = process.platform === 'win32' ? 'start' : 'open';
     var appPackage  = require(paths.appPackageJson);
     var homepagePath = appPackage.homepage;
@@ -213,7 +213,10 @@ function build(previousSizeMap) {
       console.log('  ' + chalk.cyan(openCommand) + ' http://localhost:9000');
       console.log();
     }
-  });
+*/
+  }
+
+);
 }
 
 function copyPublicFolder() {
