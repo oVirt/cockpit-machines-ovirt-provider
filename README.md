@@ -6,6 +6,11 @@ With this external provider, the `machines` plugin in Cockpit can redirect actio
 # Cockpit-machines External Providers in general 
  Please refer to cockpit-machines [README.md](https://github.com/mareklibra/cockpit/blob/machines.providers/pkg/machines/README.md) for external plugin description and API which is implemented by this project.
 
+ The entry point for the provider API implementation is `src/provider.js`.
+ It's fine to implement the API using `VanillaJS`, as far as the simple API contract is met.
+ 
+ For more complex scenarios `ES6, Babel, Webpack and React` can be leveraged as shown in this project. 
+
 # Build
  
  - git clone https://github.com/mareklibra/cockpit-machines-ovirt-provider.git && cd cockpit-machines-ovirt-provider 
@@ -39,14 +44,17 @@ Example of `ENGINE_URL`: https://my.domain.com/ovirt-engine
 
 Cockpit does not need to be restarted to take effect.
 
-# Invocation
-If installed properly, the oVirt will be leveraged after next reload of the `machines` plugin page in oVirt (re-login or refresh the page).
+# RPM Installation
 
-The provider supports oVirt SSO (see [2]).
-The user will be optionally redirected to oVirt login page and back to the Cockpit. 
+**Will follow ...**
+
+# Invocation
+If installed properly, the oVirt will be used as datasource after next reload of the `machines` plugin page in Cockpit (re-login to Cockpit).
+
+The provider supports oVirt SSO (see [2]), it means the user will be optionally redirected to oVirt login page and back to the Cockpit. 
 
 # Actions
-Data retrieval (means list of VMs and their properties) is handled still via Libvirt.
+Data retrieval (means list of VMs and their properties) is intentionally handled still via Libvirt leading to host-local view on the system.
 
 Active operations `(start, shutdown, restart)` are redirected to oVirt REST API to be performed.
 
