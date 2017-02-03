@@ -17,6 +17,8 @@ import { logDebug, logError, ovirtApiPost } from './helpers.js'
 import { readConfiguration } from './configFuncs.js'
 import { doLogin } from './login.js'
 
+import { oVirtTabFactory } from './hostVmsTabs.jsx'
+
 /**
  * Implementation of cockpit:machines External Provider API for the oVirt
  */
@@ -129,7 +131,9 @@ OVIRT_PROVIDER = {
     return (dispatch) => ovirtApiPost(`vms/${id}/start`, '<action />');
   },
 
+  vmTabRenderers: [
+    {name: 'oVirt', componentFactory: oVirtTabFactory},
+  ],
 };
-
 
 export default OVIRT_PROVIDER;
