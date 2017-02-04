@@ -4,6 +4,8 @@ import { INSTALL_SCRIPT } from './config.js'
 const $ = window.$;
 const cockpit = window.cockpit;
 
+const _ = (m) => m; // TODO: add translation
+
 export function showPluginInstallationDialog () {
   $("body").append(getInstallationDialogHtml());
 
@@ -24,7 +26,8 @@ export function showPluginInstallationDialog () {
       .fail(function (ex, data) {
         logError('oVirt Provider installation script failed. Exception="'+JSON.stringify(ex)+'", output="'+JSON.stringify(data)+'"');
 
-        var errMsg = "oVirt Provider installation script failed with following output: " + data;
+        // TODO: improve error messages based on process exit code instead of error msgs
+        var errMsg = _("oVirt Provider installation script failed with following output: ") + data;
         $("#ovirt-provider-install-dialog-error").html(errMsg);
 
         deferred.reject();
@@ -41,10 +44,10 @@ function getInstallationDialogHtml() {
        '<div class="modal-dialog">' +
           '<div class="modal-content">' +
               '<div class="modal-header">' +
-                  '<h4 class="modal-title">Finish oVirt External Provider installation</h4>' +
+                  '<h4 class="modal-title">'+ _("Finish oVirt External Provider installation") + '</h4>' +
               '</div>' +
               '<div class="modal-body">' +
-                  '<p>The oVirt External provider is installed but not yet configured. Please enter Engine URL.</p>' +
+                  '<p>' + _("The oVirt External provider is installed but not yet configured. Please enter Engine URL.") + '</p>' +
                   '<table class="form-table-ct">' +
                       '<tr>' +
                           '<td class="top"><label class="control-label" for="ovirt-provider-install-dialog-engine-url">Engine URL: </label></td>' +
@@ -54,8 +57,8 @@ function getInstallationDialogHtml() {
                   '<div id="ovirt-provider-install-dialog-error"></div>'+
               '</div>' +
               '<div class="modal-footer">' +
-                  '<button class="btn btn-default" id="ovirt-provider-install-dialog-cancel" data-dismiss="modal">Not now</button>' +
-                  '<button class="btn btn-primary" id="ovirt-provider-install-dialog-install-button">Install</button>' +
+                  '<button class="btn btn-default" id="ovirt-provider-install-dialog-cancel" data-dismiss="modal">' + _("Not now") + '</button>' +
+                  '<button class="btn btn-primary" id="ovirt-provider-install-dialog-install-button">' + _("Install") + '</button>' +
               '</div>' +
           '</div>' +
       '</div>' +

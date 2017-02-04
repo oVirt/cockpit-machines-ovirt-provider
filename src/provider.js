@@ -19,6 +19,8 @@ import { doLogin } from './login.js'
 
 import { oVirtTabFactory } from './hostVmsTabs.jsx'
 
+const _ = (m) => m; // TODO: add translation
+
 /**
  * Implementation of cockpit:machines External Provider API for the oVirt
  */
@@ -132,7 +134,7 @@ OVIRT_PROVIDER = {
   },
 
   vmTabRenderers: [
-    {name: 'oVirt', componentFactory: oVirtTabFactory},
+    {name: _("Cluster"), componentFactory: oVirtTabFactory},
   ],
 };
 
