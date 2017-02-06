@@ -63,13 +63,15 @@ export function lazyCreateOVirtTab () {
               <option value={null} selected={!this.state.selectedHostId}>
                 <i>{_("Automatically selected host")}</i>
               </option>
-              {Object.getOwnPropertyNames(hosts).map(hostId => (
-                <option value={hostId}
-                        selected={hostId === this.state.selectedHostId}
-                        disabled={isSameHostAddress(hosts[hostId].address)}>
-                  {hosts[hostId].name}
-                </option>
-              ))}
+              {Object.getOwnPropertyNames(hosts)
+                .filter( hostId => canVmMigrateToHost({host: hosts[hostId]}))
+                .map(hostId => (
+                  <option value={hostId}
+                          selected={hostId === this.state.selectedHostId}
+                          disabled={isSameHostAddress(hosts[hostId].address)}>
+                    {hosts[hostId].name}
+                  </option>
+                ))}
             </select>
           </td>
         </tr>
@@ -96,6 +98,10 @@ export function lazyCreateOVirtTab () {
       );
     }
   });
+}
+
+function canVmMigrateToHost ({ host }) {
+  return host.status === 'up';
 }
 
 export default exportedComponents;
