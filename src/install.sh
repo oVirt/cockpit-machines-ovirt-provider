@@ -41,6 +41,7 @@ function generateProviderConfig() {
   CONFIG_FILE=`dirname "$0"`/machines-ovirt.config
   echo "{ \
       \"debug\": false, \
+      \"ovirt_polling_interval\": 120000, \
       \"OVIRT_BASE_URL\": \"$ENGINE_URL\" \
     }" > $CONFIG_FILE
   echo OK: $CONFIG_FILE generated

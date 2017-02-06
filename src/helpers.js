@@ -53,3 +53,39 @@ export function ovirtApiPost (resource, input) {
     // TODO: clear token from sessionStorage and refresh --> SSO will pass again
   });
 }
+
+export function isSameHostAddress(hostAddress) { // TODO: check for all host addresses
+  logDebug(`isSameHostAddress(), hostAddress='${hostAddress}', local='${window.location.host}'`);
+  const localHost = window.location.host;
+  const localAddress = localHost.substring(0, localHost.indexOf(':'));
+  return localAddress === hostAddress;
+}
+
+/**
+ * Ensure, the function 'call()' is not executed more then once per timeperiod.
+ *
+ * @param call
+ * @param delay
+ * @param lastCall
+ * @param lock(boolean toBeLocked)
+ * @returns {{lastCall: *, result: *}}
+ */
+export function callOncePerTimeperiod({call, delay, lastCall, lock}) {
+  const now = Date.now();
+  let result;
+
+  if (lastCall + delay <= now) {
+    lastCall = now;
+    if (lock(true)) { // acquire or skip
+      result = call();
+      lock(false); // release lock
+    } else {
+      logDebug('callOncePerTimeperiod() skipped, lock is busy');
+    }
+  }
+
+  return {
+    lastCall,
+    result
+  };
+}

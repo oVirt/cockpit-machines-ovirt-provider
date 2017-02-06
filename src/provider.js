@@ -17,7 +17,12 @@ import { logDebug, logError, ovirtApiPost } from './helpers.js'
 import { readConfiguration } from './configFuncs.js'
 import { doLogin } from './login.js'
 
-import { oVirtTabFactory } from './hostVmsTabs.jsx'
+import { registerReact } from './react.js';
+import { lazyCreateReactComponents } from './reactComponents';
+import { ovirtReducer }  from './reducers'
+import OVirtTabComponents from './hostVmsTabs.jsx';
+
+import { pollOvirt } from './ovirt';
 
 const _ = (m) => m; // TODO: add translation
 
@@ -28,7 +33,7 @@ let OVIRT_PROVIDER = {};
 OVIRT_PROVIDER = {
   name: 'oVirt',
 
-  actions: { // OVIRT_PROVIDER.list is for reference only, it's expected to be replaced by init()
+  actions: { // OVIRT_PROVIDER.actions is for reference only, it's expected to be replaced by init()
     delayRefresh: () => {},
     deleteUnlistedVMs: (vmNames) => {},
     updateOrAddVm: (vm) => {},
@@ -38,7 +43,7 @@ OVIRT_PROVIDER = {
   /**
    * Initialize the Provider
    */
-  init: (actionCreators, _nextProvider) => {
+  init: (actionCreators, _nextProvider, React) => {
     logDebug(`init() called`);
 
     // The external provider is loaded into context of cockpit:machines plugin
@@ -55,6 +60,9 @@ OVIRT_PROVIDER = {
     OVIRT_PROVIDER.actions = actionCreators;
     OVIRT_PROVIDER.nextProvider = _nextProvider;
     OVIRT_PROVIDER.vmStateMap = _nextProvider.vmStateMap; // reuse Libvirt since it is used for data retrieval
+
+    registerReact(React);
+    lazyCreateReactComponents();
 
     return readConfiguration( doLogin );
   },
@@ -85,8 +93,21 @@ OVIRT_PROVIDER = {
    * Redirected to Libvirt provider.
    */
   GET_ALL_VMS: () => {
+    logDebug('OVIRT_PROVIDER.GET_ALL_VMS() called');
+
+    // TODO: read hosts
     logDebug('GET_ALL_VMS: redirecting to Libvirt provider');
-    return OVIRT_PROVIDER.nextProvider.GET_ALL_VMS();
+    return (dispatch) => {
+      pollOvirt({dispatch});
+
+      const delegate = OVIRT_PROVIDER.nextProvider.GET_ALL_VMS();
+      if (delegate.done || delegate.then) {
+        logError(`Expectation not met: nextProvider.GET_ALL_VMS() shall return 'function (dispatch) {}' and not a Premise. TODO: extend OVIRT_PROVIDER!`);
+        return ;
+      }
+
+      return delegate(dispatch);
+    }
   },
 
   /**
@@ -133,8 +154,10 @@ OVIRT_PROVIDER = {
     return (dispatch) => ovirtApiPost(`vms/${id}/start`, '<action />');
   },
 
+  reducer: ovirtReducer,
+
   vmTabRenderers: [
-    {name: _("Cluster"), componentFactory: oVirtTabFactory},
+    {name: _("Cluster"), componentFactory: () => OVirtTabComponents.OVirtTab},
   ],
 };
 
