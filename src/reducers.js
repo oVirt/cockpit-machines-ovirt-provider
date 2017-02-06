@@ -13,12 +13,10 @@ function hostsReducer (state, action) {
     }
     case 'OVIRT_REMOVE_UNLISTED_HOSTS':
     {
-      logDebug(`OVIRT_REMOVE_UNLISTED_HOSTS: oldsState = ${JSON.stringify(state)}`);
       const newState = Object.assign({}, state);
       const allHostIds = action.payload.allHostIds;
       const toBeRemoved = Object.getOwnPropertyNames(newState).filter(hostId => (allHostIds.indexOf(hostId) < 0))
       toBeRemoved.forEach(hostId => delete newState[hostId]);
-      logDebug(`OVIRT_REMOVE_UNLISTED_HOSTS: newState = ${JSON.stringify(newState)}`);
       return newState;
     }
     default:
@@ -39,4 +37,3 @@ export function ovirtReducer (state, action) {
 
   return newState;
 }
-

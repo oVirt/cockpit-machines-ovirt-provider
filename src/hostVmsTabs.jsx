@@ -1,5 +1,6 @@
 import { getReact } from './react.js';
 import { logDebug, logError, isSameHostAddress } from './helpers.js';
+import { migrateVm } from './actions';
 
 const _ = (m) => m; // TODO: add translation
 
@@ -15,30 +16,50 @@ export function lazyCreateOVirtTab () {
     return ;
   }
 
+  const ConfirmButtons = ({ confirmText, dismissText, onYes, onNo }) => { // not exported
+    return (
+      <span>
+        <button className='btn btn-danger btn-xs' type='button' onClick={onYes}>{confirmText}</button>
+        &nbsp;
+        <button className='btn btn-primary btn-xs' type='button' onClick={onNo}>{dismissText}</button>
+      </span>
+    );
+  };
+
   class MigrateTo extends React.Component { // not exported
     constructor (props) {
       super(props)
 
       this.state = {
-        confirmUnbind: false,
+        confirmAction: false,
         selectedHostId: null,
       };
     }
 
     render () {
-      const { hosts } = this.props;
+      const { vm, hosts, dispatch } = this.props;
 
-      const onHostChange = e => {
-        this.setState({selectedHostId: e.target.value});
+      const onHostChange = e => { this.setState({selectedHostId: e.target.value}); };
+      const onAction = () => { this.setState({ confirmAction: true }); };
+      const onActionCanceled = () => { this.setState({ confirmAction: false }); };
+      const onActionConfirmed = () => {
+        this.setState({ confirmAction: false });
+        dispatch(migrateVm(vm.id, this.state.selectedHostId));
       };
 
       return (
         <tr>
           <td>
-            <button className="btn btn-default btn-danger">{_("Migrate To:")}</button>
+            {this.state.confirmAction ?
+              (<ConfirmButtons confirmText={_("Confirm migration")}
+                               dismissText={_('Cancel')}
+                               onYes={onActionConfirmed}
+                               onNo={onActionCanceled}/>) :
+              (<button className="btn btn-default btn-danger" onClick={onAction}>{_("Migrate To:")}</button>)
+            }
           </td>
           <td>
-            <select className='combobox form-control' onChange={onHostChange}>
+            <select className='combobox form-control' onChange={onHostChange} disabled={this.state.confirmAction}>
               <option value={null} selected={!this.state.selectedHostId}>
                 <i>{_("Automatically selected host")}</i>
               </option>
@@ -59,15 +80,14 @@ export function lazyCreateOVirtTab () {
   // -------------------------------------------------------------------------------
   exportedComponents.OVirtTab = React.createClass({ // exported component
     render: function () {
-      const { vm, providerState } = this.props;
+      const { vm, providerState, dispatch } = this.props;
 
       return (
         <table className='machines-width-max'>
           <tr className='machines-listing-ct-body-detail'>
             <td>
-              <h1>{providerState.test}</h1>
               <table>
-                <MigrateTo hosts={providerState.hosts} />
+                <MigrateTo vm={vm} hosts={providerState.hosts} dispatch={dispatch}/>
               </table>
             </td>
             <td></td>

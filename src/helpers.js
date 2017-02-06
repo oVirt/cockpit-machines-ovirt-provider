@@ -55,7 +55,6 @@ export function ovirtApiPost (resource, input) {
 }
 
 export function isSameHostAddress(hostAddress) { // TODO: check for all host addresses
-  logDebug(`isSameHostAddress(), hostAddress='${hostAddress}', local='${window.location.host}'`);
   const localHost = window.location.host;
   const localAddress = localHost.substring(0, localHost.indexOf(':'));
   return localAddress === hostAddress;

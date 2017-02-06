@@ -34,6 +34,8 @@ OVIRT_PROVIDER = {
   name: 'oVirt',
 
   actions: { // OVIRT_PROVIDER.actions is for reference only, it's expected to be replaced by init()
+    virtMiddleware: (method, action) => {},
+
     delayRefresh: () => {},
     deleteUnlistedVMs: (vmNames) => {},
     updateOrAddVm: (vm) => {},
@@ -144,7 +146,6 @@ OVIRT_PROVIDER = {
 
   FORCEREBOOT_VM: (payload) => {
     logDebug(`FORCEREBOOT_VM(payload: ${JSON.stringify(payload)})`);
-    const id = payload.id;
     return OVIRT_PROVIDER.REBOOT_VM(payload); // TODO: implement 'force'
   },
 
@@ -152,6 +153,14 @@ OVIRT_PROVIDER = {
     logDebug(`START_VM(payload: ${JSON.stringify(payload)})`);
     const id = payload.id;
     return (dispatch) => ovirtApiPost(`vms/${id}/start`, '<action />');
+  },
+
+  MIGRATE_VM: ({ vmId, hostId }) => {
+    logDebug(`MIGRATE_VM(payload: {vmId: "${vmId}", hostId: "${hostId}"}`);
+    const action = hostId ?
+      `<action><host id="${hostId}"/></action>` :
+      '<action/>'
+    return (dispatch) => ovirtApiPost(`vms/${vmId}/migrate`, action);
   },
 
   reducer: ovirtReducer,

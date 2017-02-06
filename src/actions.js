@@ -1,3 +1,5 @@
+import OVIRT_PROVIDER from './provider';
+
 export function updateHost(host) {
   return {
     type: 'OVIRT_UPDATE_HOST',
@@ -12,4 +14,8 @@ export function removeUnlistedHosts({allHostIds}) {
       allHostIds
     }
   }
+}
+
+export function migrateVm (vmId, hostId) {
+  return OVIRT_PROVIDER.actions.virtMiddleware('MIGRATE_VM', { vmId, hostId });
 }
