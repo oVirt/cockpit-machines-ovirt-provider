@@ -94,15 +94,14 @@ OVIRT_PROVIDER = {
    *
    * Redirected to Libvirt provider.
    */
-  GET_ALL_VMS: () => {
+  GET_ALL_VMS: (payload) => {
     logDebug('OVIRT_PROVIDER.GET_ALL_VMS() called');
 
-    // TODO: read hosts
     logDebug('GET_ALL_VMS: redirecting to Libvirt provider');
     return (dispatch) => {
       pollOvirt({dispatch});
 
-      const delegate = OVIRT_PROVIDER.nextProvider.GET_ALL_VMS();
+      const delegate = OVIRT_PROVIDER.nextProvider.GET_ALL_VMS(payload);
       if (delegate.done || delegate.then) {
         logError(`Expectation not met: nextProvider.GET_ALL_VMS() shall return 'function (dispatch) {}' and not a Premise. TODO: extend OVIRT_PROVIDER!`);
         return ;
