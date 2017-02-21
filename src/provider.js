@@ -13,7 +13,7 @@
 
 */
 
-import { logDebug, logError, ovirtApiPost } from './helpers.js'
+import { logDebug, logError, ovirtApiPost, ovirtApiGet, fileDownload } from './helpers.js'
 import { readConfiguration } from './configFuncs.js'
 import { doLogin } from './login.js'
 
@@ -25,6 +25,12 @@ import OVirtTabComponents from './hostVmsTabs.jsx';
 import { pollOvirt } from './ovirt';
 
 const _ = (m) => m; // TODO: add translation
+
+const CONSOLE_TYPE_ID_MAP = { // TODO: replace by API call /vms/[ID]/graphicsconsoles for more flexibility, but it's hardcoded everywhere anyway ...
+  'spice': '7370696365',
+  'vnc': '766e63',
+  'rdp': 'rdp_not_yet_supported',
+};
 
 /**
  * Implementation of cockpit:machines External Provider API for the oVirt
@@ -78,6 +84,7 @@ OVIRT_PROVIDER = {
   canShutdown: state => OVIRT_PROVIDER.nextProvider.canShutdown(state),
   isRunning: state => OVIRT_PROVIDER.nextProvider.isRunning(state),
   canRun: state => OVIRT_PROVIDER.nextProvider.canRun(state),
+  canConsole: state => OVIRT_PROVIDER.nextProvider.canConsole(state),
 
   /**
    * Get a single VM
@@ -160,6 +167,28 @@ OVIRT_PROVIDER = {
       `<action><host id="${hostId}"/></action>` :
       '<action/>'
     return (dispatch) => ovirtApiPost(`vms/${vmId}/migrate`, action);
+  },
+
+  CONSOLE_VM (payload) {
+    const type = payload.consoleDetail.type; // spice, vnc, rdp
+    const vmId = payload.id;
+    logDebug(`CONSOLE_VM: requesting .vv file from oVirt for vmId: ${vmId}, type: ${type}`);
+
+    // TODO: console ID is so far considered as a constant in oVirt for particular console type. Anyway, cleaner (but slower) approach would be to query 'vms/${vmId}/graphicsconsoles' first to get full list
+    const consoleId = CONSOLE_TYPE_ID_MAP[type];
+
+    if (!consoleId) {
+      logError(`CONSOLE_VM: unable to map console type to id. Payload: ${JSON.stringify(payload)}`);
+      return ;
+    }
+
+    return (dispatch) => ovirtApiGet(
+      `vms/${vmId}/graphicsconsoles/${consoleId}`,
+      { Accept: 'application/x-virt-viewer' }).then(vvFile => {
+        fileDownload({ data: vvFile,
+          fileName: `${type}Console.vv`,
+          mimeType: 'application/x-virt-viewer'});
+    });
   },
 
   reducer: ovirtReducer,
