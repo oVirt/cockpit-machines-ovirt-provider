@@ -2,18 +2,21 @@
 # Installation script of the cockpit-machines-ovirt-provider.
 # Required to be called after RPM installation and before Cockpit Machines cockpit-machines-ovirt-provider is accessed.
 #
-# Main task: update configuration for Engine URL
-# Reason: Engine URL can't be determined from the VDSM host automatically, so must be provided by user.
+# Main task: update configuration files for Engine URL
+# Reason: Engine URL can't be determined from the VDSM host automatically, so it must be provided by user.
 #
 # How: 
 #      update content-security-policy in the 'shell' and 'machines' Cockpit plugins
 #      update cockpit-machines-ovirt-provider runtime configuration (to assemble oVirt REST API URL)
 #
-# Future plan:
-#      This script will be automatically called during rpm installation once the ENGINE URL can be read on the VDSM host somehow.
+# When:
+#      either manually after rpm installations as root:
+#         # cd [INSTALL_DIR] && ./install.sh https://[ENGINE_HOST]/ovirt-engine/
+#      or
+#         login into cockpit as the 'root' user
+#         access the 'machines' plugin
+#         installation dialog shows up to handle the install.sh script execution from UI
 #
-
-# TODO: Check for failure (like missing dirs or file permissions)
 
 EXIT_PARAMS=1 # wrong command parameters
 EXIT_CSP_IN_SHELL_OVERRIDE=2 # cockpit/shell/override.json exists and already contains conflicting 'content-security-policy' section. Manual merge is required.
