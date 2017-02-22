@@ -9,6 +9,7 @@ const _ = (m) => m; // TODO: add translation
 // Example how jQuery can be used to integrate with the parent cockpit:machines
 export function showPluginInstallationDialog () {
   $("body").append(getInstallationDialogHtml());
+  checkForRootUser();
 
   var deferred = cockpit.defer();
   $("#ovirt-provider-install-dialog-cancel").on("click", function() {
@@ -26,13 +27,14 @@ export function showPluginInstallationDialog () {
         $("#ovirt-provider-install-dialog-body").replaceWith( getLogoutConfirmationHtml() );
         $("#ovirt-provider-install-dialog-footer").replaceWith( getLogoutConfirmationFooterHtml() );
         $("#ovirt-provider-install-dialog-logout-button").on("click", function() {
-          // TODO: why is nothing from following not working?
+          // TODO: why is nothing from following working?
           // $("#go-logout", window.parent.document).trigger('click');
           // $("#navbar-dropdown", window.top.document).trigger('click');
           // cockpit.logout(true);
 
-          // workiaround since auto-logout is not working
+          // workaround since auto-logout is not working
           $("body").append( getLogoutRequiredHtml() );
+
           deferred.resolve();
         });
       })
@@ -60,6 +62,7 @@ function getInstallationDialogHtml() {
               '</div>' +
               '<div class="modal-body" id="ovirt-provider-install-dialog-body">' +
                   '<p>' + _("The oVirt External provider is installed but not yet configured. Please enter Engine URL.") + '</p>' +
+                  '<div id="ovirt-provider-install-dialog-body-rootCheck"></div>' +
                   '<table class="form-table-ct">' +
                       '<tr>' +
                           '<td class="top"><label class="control-label" for="ovirt-provider-install-dialog-engine-url">Engine URL: </label></td>' +
@@ -75,6 +78,15 @@ function getInstallationDialogHtml() {
           '</div>' +
       '</div>' +
     '</div>';
+}
+
+function checkForRootUser() {
+  cockpit.user().done(user => {
+    if (user.name !== 'root') {
+      $("#ovirt-provider-install-dialog-body-rootCheck")
+        .replaceWith(`<p>You are logged as <b>${user.name}</b>. Please note, following operation might fail, since <b>root</b> login might be required to access Cockpit's configuration files.</p>`);
+    }
+  });
 }
 
 function getLogoutConfirmationHtml() {
