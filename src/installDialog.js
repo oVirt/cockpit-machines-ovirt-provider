@@ -6,6 +6,15 @@ const cockpit = window.cockpit;
 
 const _ = (m) => m; // TODO: add translation
 
+const INSTALL_SH_ERRORS = {
+  '1': _("oVirt Provider installation script failed due to missing arguments."),
+  '2': _("oVirt Provider installation script failed: Existing 'cockpit/shell/override.json' file already contains conflicting 'content-security-policy' section. Manual merge is required.<br/>Please set <b>\"content-security-policy\": \"default-src 'self';frame-src [YOUR_ENGINE_URL]\"</b>"),
+  '3': _("oVirt Provider installation script failed: Can't write to cockpit/machines/provider/machines-ovirt.config, try as root."),
+  '4': _("oVirt Provider installation script failed: Can't write to cockpit/machines/override.json, try as root."),
+  '5': _("oVirt Provider installation script failed: Can't write to cockpit/shell/override.json, try as root."),
+  '6': _("oVirt Provider installation script failed: In already existing cockpit/shell/override.json file is missing 'content-security-policy', but merge failed, try as root."),
+};
+
 // Example how jQuery can be used to integrate with the parent cockpit:machines
 export function showPluginInstallationDialog () {
   $("body").append(getInstallationDialogHtml());
@@ -41,9 +50,12 @@ export function showPluginInstallationDialog () {
       .fail(function (ex, data) {
         logError('oVirt Provider installation script failed. Exception="'+JSON.stringify(ex)+'", output="'+JSON.stringify(data)+'"');
 
-        // TODO: improve error messages based on process exit code instead of just forwarding error msgs
-        var errMsg = _("oVirt Provider installation script failed with following output: ") + data;
-        $("#ovirt-provider-install-dialog-error").html(errMsg);
+        let errMsg = _("oVirt Provider installation script failed with following output: ") + data;
+        // ex: {"problem":null,"exit_status":3,"exit_signal":null,"message":"/root/.local/share/cockpit/machines/provider/install.sh exited with code 3"}
+        if (ex.exit_status) {
+          errMsg = INSTALL_SH_ERRORS[ex.exit_status] || errMsg;
+        }
+        $("#ovirt-provider-install-dialog-error").html(`<p><span class="pficon pficon-warning-triangle-o"></span>&nbsp;${errMsg}</p>`);
 
         deferred.reject();
       });
