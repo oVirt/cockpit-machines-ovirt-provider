@@ -53,6 +53,30 @@ function visibilityReducer (state, action) {
   }
 }
 
+function vmsReducer (state, action) {
+  state = state || {}; // object of 'vmId: vm'
+
+  switch (action.type) {
+    case 'OVIRT_UPDATE_VM':
+    {
+      const newState = Object.assign({}, state);
+      newState[action.payload.id] = newState[action.payload.id] || {};
+      Object.assign(newState[action.payload.id], action.payload); // merge instead of replace, is it as expected?
+      return newState;
+    }
+    case 'OVIRT_REMOVE_UNLISTED_VMS':
+    {
+      const newState = Object.assign({}, state);
+      const allVmsIds = action.payload.allVmsIds;
+      const toBeRemoved = Object.getOwnPropertyNames(newState).filter(vmId => (allVmsIds.indexOf(vmId) < 0))
+      toBeRemoved.forEach(vmId => delete newState[vmId]);
+      return newState;
+    }
+    default:
+      return state;
+  }
+}
+
 function callSubReducer (newState, action, subreducer, substateName) {
   const newSubstate = subreducer(newState[substateName], action);
   if (newState[substateName] !== newSubstate) {
@@ -72,6 +96,7 @@ export function ovirtReducer (state, action) {
   let newState = state;
   newState = callSubReducer(newState, action, hostsReducer, 'hosts');
   newState = callSubReducer(newState, action, visibilityReducer, 'visibility');
+  newState = callSubReducer(newState, action, vmsReducer, 'vms');
 
   return newState;
 }

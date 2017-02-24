@@ -77,17 +77,19 @@ export function callOncePerTimeperiod({call, delay, lastCall, lock}) {
   let result;
 
   if (lastCall + delay <= now) {
-    lastCall = now;
     if (lock(true)) { // acquire or skip
-      result = call();
-      lock(false); // release lock
+      try {
+        result = call();
+      } finally {
+        lock(false); // release lock
+      }
     } else {
       logDebug('callOncePerTimeperiod() skipped, lock is busy');
     }
   }
 
   return {
-    lastCall,
+    lastCall: Date.now(), // start counting after the call is finished
     result
   };
 }

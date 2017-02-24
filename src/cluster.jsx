@@ -41,7 +41,6 @@ export function lazyCreateClusterView() {
     }
 
     // Hack to switch visibility of top-level components without parent cockpit:machines awareness
-    logDebug(`ClusterView: providerState.visibility = ${JSON.stringify(providerState.visibility)}`);
     if (providerState.visibility.clusterView) {
       $('#app').hide();
       return (<ClusterVms vms={providerState.vms}/>);

@@ -1,13 +1,13 @@
-import { updateHost, removeUnlistedHosts } from './actions';
+import { updateHost, removeUnlistedHosts, updateVm, removeUnlistedVms } from './actions';
 import { callOncePerTimeperiod, logDebug, logError, ovirtApiGet } from './helpers';
 import CONFIG from './config';
 
+let lastOvirtPoll = -1; // timestamp
 /**
  * Initiate polling of oVirt data.
  *
  * @param dispatch
  */
-let lastOvirtPoll = -1;
 export function pollOvirt({dispatch}) {
   lastOvirtPoll = callOncePerTimeperiod({
     lastCall: lastOvirtPoll,
@@ -16,8 +16,9 @@ export function pollOvirt({dispatch}) {
     call: () => {
       logDebug('Execution of oVirt polling');
       doRefreshHosts(dispatch);
+      doRefreshVms(dispatch);
     }
-  }).lastCall;
+  }).lastCall; // update the timestamp
 }
 
 let pollOvirtLocked = false;
@@ -66,6 +67,48 @@ function doRefreshHosts(dispatch) {
     }
   });
 
-  dispatch(updateHost({id: '123', name: 'test1'}));
-  dispatch(updateHost({id: '456', name: 'test2'}));
+//  dispatch(updateHost({id: '123', name: 'test1'}));
+//  dispatch(updateHost({id: '456', name: 'test2'}));
+}
+
+function doRefreshVms(dispatch) { // TODO: consider paging; there might be thousands of vms
+  ovirtApiGet('vms').done(result => {
+    if (result && result.vm && (result.vm instanceof Array)) {
+      const allVmsIds = [];
+      result.vm.forEach( vm => {
+        allVmsIds.push(vm.id);
+        dispatch(updateVm({ // TODO: consider batching
+          id: vm.id,
+          name: vm.name,
+          status: vm.status,
+          description: vm.description,
+          highAvailability: vm.high_availability,
+          icons: {
+            largeId: vm.large_icon ? vm.large_icon.id : undefined,
+            smallId: vm.small_icon ? vm.small_icon.id : undefined,
+          },
+          memory: vm.memory,
+          cpu: {
+            architecture: vm.cpu.architecture,
+            topology: {
+              sockets: vm.cpu.topology.sockets,
+              cores: vm.cpu.topology.cores,
+              threads: vm.cpu.topology.threads
+            }
+          },
+          origin: vm.origin,
+          os: {
+            type: vm.os.type
+          },
+          stateless: vm.stateless,
+          clusterId: vm.cluster.id,
+          templateId: vm.template.id,
+          host: vm.host ? vm.host.id : undefined,
+        }));
+      });
+      dispatch(removeUnlistedVms({allVmsIds}));
+    } else {
+      logError(`doRefreshVms() failed, result: ${JSON.stringify(result)}`);
+    }
+  });
 }

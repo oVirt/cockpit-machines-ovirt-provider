@@ -10,6 +10,7 @@ const CONFIG = { // will be dynamically replaced by content of CONFIG_FILE_URL w
   OVIRT_BASE_URL: 'https://engine.local/ovirt-engine',
 
   // TODO: add ovirt_polling_interval to external config file
+  // TODO: increase to at least 1 minute
   ovirt_polling_interval: 5000, // in ms, oVirt polling is not called more then once per this time period. Single execution can be in progress at a time.
 
   token: null,

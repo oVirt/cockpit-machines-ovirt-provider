@@ -7,11 +7,27 @@ export function updateHost(host) {
   }
 }
 
+export function updateVm(vm) {
+  return {
+    type: 'OVIRT_UPDATE_VM',
+    payload: vm
+  }
+}
+
 export function removeUnlistedHosts({allHostIds}) {
   return {
     type: 'OVIRT_REMOVE_UNLISTED_HOSTS',
     payload: {
       allHostIds
+    }
+  }
+}
+
+export function removeUnlistedVms({allVmsIds}) {
+  return {
+    type: 'OVIRT_REMOVE_UNLISTED_VMS',
+    payload: {
+      allVmsIds
     }
   }
 }
