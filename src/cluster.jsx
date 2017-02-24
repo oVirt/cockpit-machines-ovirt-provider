@@ -1,6 +1,8 @@
 import { getReact } from './react.js';
 import { logDebug, logError } from './helpers.js';
 
+import OVIRT_PROVIDER from './provider';
+
 const $ = window.$;
 const cockpit = window.cockpit;
 
@@ -19,13 +21,51 @@ export function lazyCreateClusterView() {
     return ;
   }
 
-  const ClusterVms = ({ vms }) => {
-    if (!vms) { // before cluster vms are loaded
-      logDebug(`ClusterVms component: no vms provided`);
-      return (<div/>);
+  const { Listing, ListingRow, StateIcon } = OVIRT_PROVIDER.parentReactComponents;
+
+  const NoVm = () => {
+    return (<div>
+      TODO: Data retrieved, but no VM found in oVirt!
+    </div>);
+  };
+
+  const NoVmUnitialized = () => { // TODO
+    return (<div>Please wait till VMs list is loaded from the server.</div>);
+  };
+
+  const Vm = ({ vm, config }) => {
+    const stateIcon = (<StateIcon state={vm.state} config={config}/>);
+
+    return (<ListingRow
+      columns={[
+            {name: vm.name, 'header': true},
+            stateIcon
+            ]}
+      />);
+  };
+
+  const ClusterVms = ({ vms, dispatch, config }) => {
+    if (!vms) { // before cluster vms are loaded ; TODO: handle state
+      return (<NoVmUnitialized />);
     }
 
-    return (<div>Cluster VMs: {JSON.stringify(vms)}</div>);
+    if (vms.length === 0) { // there are no vms
+      return (<NoVm />);
+    }
+
+    return (<div className='container-fluid'>
+      <Listing title={_("Cluster Virtual Machines")} columnTitles={[_("Name"), _("State")]}>
+        {Object.getOwnPropertyNames(vms).map(vmId => {
+          return (
+            <Vm vm={vms[vmId]}
+                config={config}
+                dispatch={dispatch}
+            />);
+        })}
+      </Listing>
+    </div>);
+
+//    return (<div>Cluster VMs: {JSON.stringify(vms)}</div>);
   };
 
   /**
@@ -43,7 +83,7 @@ export function lazyCreateClusterView() {
     // Hack to switch visibility of top-level components without parent cockpit:machines awareness
     if (providerState.visibility.clusterView) {
       $('#app').hide();
-      return (<ClusterVms vms={providerState.vms}/>);
+      return (<ClusterVms vms={providerState.vms} config={config} />);
     }
 
     $('#app').show(); // Host Vms List will be rendered by parent cockpit:machine
@@ -51,7 +91,7 @@ export function lazyCreateClusterView() {
   };
 
   /**
-   * Hook to render React to another placeholder.
+   * Hook rendering React to another placeholder.
    * Listens on store changes.
    * Exported.
    */

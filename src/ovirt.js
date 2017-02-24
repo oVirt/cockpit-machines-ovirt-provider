@@ -80,7 +80,7 @@ function doRefreshVms(dispatch) { // TODO: consider paging; there might be thous
         dispatch(updateVm({ // TODO: consider batching
           id: vm.id,
           name: vm.name,
-          status: vm.status,
+          state: mapOvirtStatusToLibvirtState(vm.status),
           description: vm.description,
           highAvailability: vm.high_availability,
           icons: {
@@ -111,4 +111,13 @@ function doRefreshVms(dispatch) { // TODO: consider paging; there might be thous
       logError(`doRefreshVms() failed, result: ${JSON.stringify(result)}`);
     }
   });
+}
+
+function mapOvirtStatusToLibvirtState(ovirtStatus) {
+  switch (ovirtStatus) {// TODO finish
+    case 'up': return 'running';
+    case 'down': return 'shut off';
+    default:
+      return ovirtStatus
+  }
 }

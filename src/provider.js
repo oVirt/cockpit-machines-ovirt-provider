@@ -47,12 +47,19 @@ OVIRT_PROVIDER = {
     deleteUnlistedVMs: (vmNames) => {},
     updateOrAddVm: (vm) => {},
   },
+  parentReactComponents: {}, // to reuse look&feel, see init()
   nextProvider: null,
 
   /**
    * Initialize the Provider
    */
-  init: (actionCreators, _nextProvider, React, store) => {
+  init: ({
+    defaultProvider,
+    React,
+    reduxStore,
+    exportedActionCreators,
+    exportedReactComponents,
+  }) => {
     logDebug(`init() called`);
 
     // The external provider is loaded into context of cockpit:machines plugin
@@ -66,14 +73,16 @@ OVIRT_PROVIDER = {
       return ;
     }
 
-    OVIRT_PROVIDER.actions = actionCreators;
-    OVIRT_PROVIDER.nextProvider = _nextProvider;
-    OVIRT_PROVIDER.vmStateMap = _nextProvider.vmStateMap; // reuse Libvirt since it is used for data retrieval
+    OVIRT_PROVIDER.actions = exportedActionCreators;
+    OVIRT_PROVIDER.parentReactComponents = exportedReactComponents;
+    OVIRT_PROVIDER.nextProvider = defaultProvider;
+    OVIRT_PROVIDER.vmStateMap = { // TODO: list oVirt specific states, compare to ovirt.js:mapOvirtStatusToLibvirtState()
+    }; // reuse map for Libvirt (defaultProvider.vmStateMap) since it is used for data retrieval
 
     loadCss();
     registerReact(React);
     lazyCreateReactComponents();
-    appendClusterSwitch(store);
+    appendClusterSwitch(reduxStore);
 
     return readConfiguration( doLogin );
   },
