@@ -13,7 +13,7 @@
 
 */
 
-import { logDebug, logError, ovirtApiPost, ovirtApiGet, fileDownload } from './helpers.js'
+import { logDebug, logError, ovirtApiPost, ovirtApiGet, fileDownload, loadCss } from './helpers.js'
 import { readConfiguration } from './configFuncs.js'
 import { doLogin } from './login.js'
 
@@ -21,6 +21,7 @@ import { registerReact } from './react.js';
 import { lazyCreateReactComponents } from './reactComponents';
 import { ovirtReducer }  from './reducers'
 import OVirtTabComponents from './hostVmsTabs.jsx';
+import { appendClusterSwitch } from './topLevelViewSwitch.jsx';
 
 import { pollOvirt } from './ovirt';
 
@@ -51,7 +52,7 @@ OVIRT_PROVIDER = {
   /**
    * Initialize the Provider
    */
-  init: (actionCreators, _nextProvider, React) => {
+  init: (actionCreators, _nextProvider, React, store) => {
     logDebug(`init() called`);
 
     // The external provider is loaded into context of cockpit:machines plugin
@@ -69,8 +70,10 @@ OVIRT_PROVIDER = {
     OVIRT_PROVIDER.nextProvider = _nextProvider;
     OVIRT_PROVIDER.vmStateMap = _nextProvider.vmStateMap; // reuse Libvirt since it is used for data retrieval
 
+    loadCss();
     registerReact(React);
     lazyCreateReactComponents();
+    appendClusterSwitch(store);
 
     return readConfiguration( doLogin );
   },

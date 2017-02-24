@@ -1,4 +1,4 @@
-import { logDebug } from './helpers';
+import { logDebug, logError } from './helpers';
 
 function hostsReducer (state, action) {
   state = state || {}; // object of 'hostId: host'
@@ -24,15 +24,50 @@ function hostsReducer (state, action) {
   }
 }
 
+function visibilityReducer (state, action) {
+  state = state || {}; // object of clusterView:false, hostView:false
+
+  switch (action.type) {
+    case 'OVIRT_SWITCH_VISIBILITY':
+    { // TODO: so far there are just two states, generalize if needed
+      const newState = Object.assign({}, state);
+
+      switch (action.payload.topLevelVisibleComponent) {
+        case 'clusterView': {
+          newState.clusterView = true; // replace by object, if finer granularity needed
+          newState.hostView = false;
+          return newState;
+        }
+        case 'hostView': {
+          newState.clusterView = null;
+          newState.hostView = true;
+          return newState;
+        }
+        default: // so far, it should not happen
+          logError(`visibilityReducer: unknown topLevelVisibleComponent: ${JSON.stringify(action)}`);
+          return newState;
+      }
+    }
+    default:
+      return state;
+  }
+}
+
 export function ovirtReducer (state, action) {
   state = state || {
-      hosts: {} // {id:host}
+      hosts: {}, // {id:host}
+      visibility: {}, // {clusterView:false, hostView:false}
     };
 
   let newState = state;
   const newHosts = hostsReducer(newState.hosts, action);
   if (newState.hosts !== newHosts) {
     newState = Object.assign({}, newState, {hosts: newHosts});
+  }
+
+  const newVisibility = visibilityReducer(newState.visibility, action);
+  if (newState.visibility !== newVisibility) {
+    newState = Object.assign({}, newState, {visibility: newVisibility});
   }
 
   return newState;

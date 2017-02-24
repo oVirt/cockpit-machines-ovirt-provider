@@ -19,3 +19,12 @@ export function removeUnlistedHosts({allHostIds}) {
 export function migrateVm (vmId, hostId) {
   return OVIRT_PROVIDER.actions.virtMiddleware('MIGRATE_VM', { vmId, hostId });
 }
+
+export function switchToplevelVisibility (topLevelVisibleComponent) {
+  return {
+    type: 'OVIRT_SWITCH_VISIBILITY',
+    payload: {
+      topLevelVisibleComponent
+    }
+  }
+}

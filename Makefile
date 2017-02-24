@@ -6,6 +6,7 @@ cockpit-machines-ovirt-provider:
 	mkdir -p dist
 	cp build/static/js/main.*.js dist/index.js
 	cp src/install.sh dist/
+	cp src/machines-ovirt.css dist/
 
 distclean:
 	rm -rf build dist node_modules

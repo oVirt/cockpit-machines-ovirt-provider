@@ -3,6 +3,7 @@
 export const INSTALL_SCRIPT = '/root/.local/share/cockpit/machines/provider/install.sh' // TODO: change it!
 
 export const CONFIG_FILE_URL = 'provider/machines-ovirt.config'
+export const CSS_FILE_URL = 'provider/machines-ovirt.css'
 
 const CONFIG = { // will be dynamically replaced by content of CONFIG_FILE_URL within OVIRT_PROVIDER.init()
   debug: true, // set to false to turn off the debug logging

@@ -1,4 +1,4 @@
-import CONFIG from './config.js'
+import CONFIG, { CSS_FILE_URL } from './config.js'
 
 export function logDebug (msg) {
   if (CONFIG.debug) {
@@ -119,4 +119,17 @@ export function fileDownload ({ data, fileName = 'myFile.dat', mimeType = 'appli
       return true;
     }
   }
+}
+
+/**
+ * Dynamically loads cockpit-machines-ovirt-provider CSS
+ */
+export function loadCss () {
+  const link = document.createElement( "link" );
+  link.href = CSS_FILE_URL;
+  link.type = "text/css";
+  link.rel = "stylesheet";
+  link.media = "screen,print";
+
+  document.getElementsByTagName( "head" )[0].appendChild( link );
 }
