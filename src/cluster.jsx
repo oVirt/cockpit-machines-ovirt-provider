@@ -21,6 +21,7 @@ export function lazyCreateClusterView() {
 
   const ClusterVms = ({ vms }) => {
     if (!vms) { // before cluster vms are loaded
+      logDebug(`ClusterVms component: no vms provided`);
       return (<div/>);
     }
 
@@ -39,7 +40,7 @@ export function lazyCreateClusterView() {
       return (<div/>); // not yet initialized
     }
 
-    // Hack to switch visibility of top-level components
+    // Hack to switch visibility of top-level components without parent cockpit:machines awareness
     logDebug(`ClusterView: providerState.visibility = ${JSON.stringify(providerState.visibility)}`);
     if (providerState.visibility.clusterView) {
       $('#app').hide();
