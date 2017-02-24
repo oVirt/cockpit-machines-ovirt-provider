@@ -53,6 +53,16 @@ function visibilityReducer (state, action) {
   }
 }
 
+function callSubReducer (newState, action, subreducer, substateName) {
+  const newSubstate = subreducer(newState[substateName], action);
+  if (newState[substateName] !== newSubstate) {
+    const temp = {};
+    temp[substateName] = newSubstate;
+    newState = Object.assign({}, newState, temp);
+  }
+  return newState;
+}
+
 export function ovirtReducer (state, action) {
   state = state || {
       hosts: {}, // {id:host}
@@ -60,15 +70,8 @@ export function ovirtReducer (state, action) {
     };
 
   let newState = state;
-  const newHosts = hostsReducer(newState.hosts, action);
-  if (newState.hosts !== newHosts) {
-    newState = Object.assign({}, newState, {hosts: newHosts});
-  }
-
-  const newVisibility = visibilityReducer(newState.visibility, action);
-  if (newState.visibility !== newVisibility) {
-    newState = Object.assign({}, newState, {visibility: newVisibility});
-  }
+  newState = callSubReducer(newState, action, hostsReducer, 'hosts');
+  newState = callSubReducer(newState, action, visibilityReducer, 'visibility');
 
   return newState;
 }
