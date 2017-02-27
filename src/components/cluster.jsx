@@ -1,8 +1,8 @@
-import { getReact } from './react.js';
-import { logDebug, logError, toGigaBytes, valueOrDefault } from './helpers.js';
+import { getReact } from '../react.js';
+import { logDebug, logError, toGigaBytes, valueOrDefault } from '../helpers.js';
 import VdsmComponents from './vdsm.jsx';
 
-import OVIRT_PROVIDER from './provider';
+import OVIRT_PROVIDER from '../provider';
 
 const $ = window.$;
 // const cockpit = window.cockpit;

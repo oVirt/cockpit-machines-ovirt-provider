@@ -1,7 +1,7 @@
-import { lazyCreateOVirtTab } from './hostVmsTabs.jsx';
-import { lazyCreateVdsmView } from './vdsm.jsx';
-import { lazyCreateClusterView } from './cluster.jsx';
-import { lazyCreateOVirtView } from './topLevelViewSwitch.jsx';
+import { lazyCreateOVirtTab } from './components/hostVmsTabs.jsx';
+import { lazyCreateVdsmView } from './components/vdsm.jsx';
+import { lazyCreateClusterView } from './components/cluster.jsx';
+import { lazyCreateOVirtView } from './components/topLevelViewSwitch.jsx';
 
 export function lazyCreateReactComponents () {
   lazyCreateOVirtTab();

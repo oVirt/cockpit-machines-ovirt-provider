@@ -20,8 +20,8 @@ import { doLogin } from './login.js'
 import { registerReact } from './react.js';
 import { lazyCreateReactComponents } from './reactComponents';
 import { ovirtReducer }  from './reducers'
-import OVirtTabComponents from './hostVmsTabs.jsx';
-import { appendClusterSwitch } from './topLevelViewSwitch.jsx';
+import OVirtTabComponents from './components/hostVmsTabs.jsx';
+import { appendClusterSwitch } from './components/topLevelViewSwitch.jsx';
 
 import { pollOvirt } from './ovirt';
 

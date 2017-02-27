@@ -1,6 +1,6 @@
-import { getReact } from './react.js';
-import { logDebug, logError, isSameHostAddress } from './helpers.js';
-import { migrateVm } from './actions';
+import { getReact } from '../react.js';
+import { logDebug, logError, isSameHostAddress } from '../helpers.js';
+import { migrateVm } from '../actions';
 
 const _ = (m) => m; // TODO: add translation
 

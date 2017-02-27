@@ -1,7 +1,7 @@
-import { getReact } from './react.js';
+import { getReact } from '../react.js';
 
-import { logError } from './helpers.js';
-import { switchToplevelVisibility } from './actions';
+import { logError } from '../helpers.js';
+import { switchToplevelVisibility } from '../actions';
 
 import ClusterComponents from './cluster.jsx';
 import VdsmComponents from './vdsm.jsx';
