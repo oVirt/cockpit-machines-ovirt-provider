@@ -5,6 +5,8 @@ export const INSTALL_SCRIPT = '/root/.local/share/cockpit/machines/provider/inst
 export const CONFIG_FILE_URL = 'provider/machines-ovirt.config'
 export const CSS_FILE_URL = 'provider/machines-ovirt.css'
 
+export const VDSM_CONF_FILE = '/etc/vdsm/vdsm.conf';
+
 const CONFIG = { // will be dynamically replaced by content of CONFIG_FILE_URL within OVIRT_PROVIDER.init()
   debug: true, // set to false to turn off the debug logging
   OVIRT_BASE_URL: 'https://engine.local/ovirt-engine',
@@ -14,6 +16,6 @@ const CONFIG = { // will be dynamically replaced by content of CONFIG_FILE_URL w
   ovirt_polling_interval: 5000, // in ms, oVirt polling is not called more then once per this time period. Single execution can be in progress at a time.
 
   token: null,
-}
+};
 
 export default CONFIG
