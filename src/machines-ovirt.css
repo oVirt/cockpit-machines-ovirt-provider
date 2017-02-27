@@ -3,3 +3,13 @@
     top: 0%;
     right: 1%;
 }
+
+.ovirt-provider-crop {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    width: inherit;
+}
+
+.ovirt-provider-max-width-20 {
+    max-width: 20%;
+}

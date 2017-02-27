@@ -135,3 +135,31 @@ export function loadCss () {
 
   document.getElementsByTagName( "head" )[0].appendChild( link );
 }
+
+export function toGigaBytes (amount, currentUnit) {
+  let result;
+  switch (currentUnit) {
+    case 'B':
+      result = amount / 1024 / 1024 / 1024;
+      break;
+    case 'KiB':
+      result = amount / 1024 / 1024;
+      break;
+    default:
+      console.error(`toGigaBytes(): unknown unit: ${currentUnit}`);
+      result = amount / 1;
+  }
+
+  if (result < 1) {
+    result = result.toFixed(2);
+  } else {
+    const fixed1 = result.toFixed(1);
+    result = (result - fixed1 === 0) ? result.toFixed(0) : fixed1;
+  }
+
+  return result;
+}
+
+export function valueOrDefault (value, def) {
+  return (value === undefined || value === null) ?  def : value;
+}

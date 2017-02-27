@@ -103,7 +103,7 @@ function doRefreshVms(dispatch) { // TODO: consider paging; there might be thous
           stateless: vm.stateless,
           clusterId: vm.cluster.id,
           templateId: vm.template.id,
-          host: vm.host ? vm.host.id : undefined,
+          hostId: vm.host ? vm.host.id : undefined,
         }));
       });
       dispatch(removeUnlistedVms({allVmsIds}));
