@@ -48,12 +48,22 @@ export function lazyCreateClusterView() {
     }
 
     const host = hosts[id];
-    const tooltip = `${_("address")}: ${host.address}`;
+    const tooltip = `${_("Address")}: ${host.address}`;
     return <span title={tooltip} data-toggle='tooltip' data-placement='left'>{host.name}</span>
+  };
+  const VmTemplate = ({ id, templates }) => {
+    if (!id || !templates || !templates[id]) {
+      return null; // not running or data load not yet finished
+    }
+
+    const template = templates[id];
+    const baseTemplateName = template.version.baseTemplateId && templates[template.version.baseTemplateId] ? templates[template.version.baseTemplateId].name : '';
+    const tooltip = `${_("Description")}: ${template.description}\n${_("Version")}: ${valueOrDefault(template.version.name, '')}\n${_("Version num")}: ${valueOrDefault(template.version.number, '')}\n${_("Base template")}: ${baseTemplateName}\n`;
+    return <span title={tooltip} data-toggle='tooltip' data-placement='left'>{template.name}</span>
   };
   const VmDescription = ({ descr }) => (<span>{descr}</span>); // cropping is not needed, the text wraps
 
-  const Vm = ({ vm, hosts, config }) => {
+  const Vm = ({ vm, hosts, templates, config }) => {
     const stateIcon = (<StateIcon state={vm.state} config={config}/>);
 
     return (<ListingRow // TODO: icons? cluster? templates?
@@ -61,6 +71,7 @@ export function lazyCreateClusterView() {
             {name: vm.name, 'header': true},
             <VmDescription descr={vm.description} />,
             <VmMemory mem={vm.memory} />,
+            <VmTemplate id={vm.templateId} templates={templates} />,
             <VmCpu cpu={vm.cpu} />,
             <VmOS os={vm.os} />,
             <VmHA highAvailability={vm.highAvailability} />,
@@ -72,7 +83,7 @@ export function lazyCreateClusterView() {
       />);
   };
 
-  const ClusterVms = ({ vms, hosts, dispatch, config }) => {
+  const ClusterVms = ({ vms, hosts, templates, dispatch, config }) => {
     if (!vms) { // before cluster vms are loaded ; TODO: better handle state for the user
       return (<NoVmUnitialized />);
     }
@@ -80,43 +91,16 @@ export function lazyCreateClusterView() {
     if (vms.length === 0) { // there are no vms
       return (<NoVm />);
     }
-/*
-    id: vm.id,
-      name: vm.name,
-      state: mapOvirtStatusToLibvirtState(vm.status),
-      description: vm.description,
-      highAvailability: vm.high_availability,
-      icons: {
-      largeId: vm.large_icon ? vm.large_icon.id : undefined,
-        smallId: vm.small_icon ? vm.small_icon.id : undefined,
-    },
-    memory: vm.memory,
-      cpu: {
-      architecture: vm.cpu.architecture,
-        topology: {
-        sockets: vm.cpu.topology.sockets,
-          cores: vm.cpu.topology.cores,
-          threads: vm.cpu.topology.threads
-      }
-    },
-    origin: vm.origin,
-      os: {
-      type: vm.os.type
-    },
-    stateless: vm.stateless,
-      clusterId: vm.cluster.id,
-      templateId: vm.template.id,
-      host: vm.host ? vm.host.id : undefined,
-*/
-
 
     return (<div className='container-fluid'>
       <Listing title={_("Cluster Virtual Machines")} columnTitles={[
-        _("Name"), _("Description"), _("Memory"), _("vCPUs"), _("OS"), _("HA"), _("Stateless"), _("Origin"), _("Host"), _("State")]}>
+        _("Name"), _("Description"), _("Memory"), _("Template"), _("vCPUs"), _("OS"),
+        _("HA"), _("Stateless"), _("Origin"), _("Host"), _("State")]}>
         {Object.getOwnPropertyNames(vms).map(vmId => {
           return (
             <Vm vm={vms[vmId]}
                 hosts={hosts}
+                templates={templates}
                 config={config}
                 dispatch={dispatch}
             />);
@@ -142,7 +126,8 @@ export function lazyCreateClusterView() {
     // Hack to switch visibility of top-level components without parent cockpit:machines awareness
     if (providerState.visibility.clusterView) {
       $('#app').hide();
-      return (<ClusterVms vms={providerState.vms} hosts={providerState.hosts} dispatch={dispatch} config={config} />);
+      return (<ClusterVms vms={providerState.vms} hosts={providerState.hosts} templates={providerState.templates}
+                          dispatch={dispatch} config={config} />);
     }
 
     $('#app').show(); // Host Vms List will be rendered by parent cockpit:machine
