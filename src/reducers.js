@@ -25,25 +25,33 @@ function hostsReducer (state, action) {
 }
 
 function visibilityReducer (state, action) {
-  state = state || {}; // object of clusterView:false, hostView:false
+  state = state || {}; // object of clusterView:false, hostView:false, vdsmView:false
 
   switch (action.type) {
     case 'OVIRT_SWITCH_VISIBILITY':
-    { // TODO: so far there are just two states, generalize if needed
+    { // TODO: so far there are just three states, generalize if needed
       const newState = Object.assign({}, state);
 
       switch (action.payload.topLevelVisibleComponent) {
         case 'clusterView': {
           newState.clusterView = true; // replace by object, if finer granularity needed
           newState.hostView = false;
+          newState.vdsmView = null; // replace by object, if finer granularity needed
           return newState;
         }
         case 'hostView': {
           newState.clusterView = null;
           newState.hostView = true;
+          newState.vdsmView = null;
           return newState;
         }
-        default: // so far, it should not happen
+        case 'vdsmView': {
+          newState.clusterView = null;
+          newState.hostView = false;
+          newState.vdsmView = true;
+          return newState;
+        }
+        default: // so far, this should not happen
           logError(`visibilityReducer: unknown topLevelVisibleComponent: ${JSON.stringify(action)}`);
           return newState;
       }

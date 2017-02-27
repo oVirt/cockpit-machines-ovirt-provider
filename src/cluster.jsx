@@ -1,5 +1,6 @@
 import { getReact } from './react.js';
 import { logDebug, logError, toGigaBytes, valueOrDefault } from './helpers.js';
+import VdsmComponents from './vdsm.jsx';
 
 import OVIRT_PROVIDER from './provider';
 
@@ -10,18 +11,18 @@ const _ = (m) => m; // TODO: add translation
 
 const exportedComponents = {}; // to be filled by lazy created and exported components
 
-
 /**
  * Build React components once the React context is available.
  */
 export function lazyCreateClusterView() {
   const React = getReact();
   if (!React) {
-    logError(`lazyCreateOVirtTab(): React not registered!`);
+    logError(`lazyCreateClusterView(): React not registered!`);
     return ;
   }
 
   const { Listing, ListingRow, StateIcon } = OVIRT_PROVIDER.parentReactComponents;
+  const { VdsmView } = VdsmComponents;
 
   const NoVm = () => {
     return (<div>
@@ -83,7 +84,10 @@ export function lazyCreateClusterView() {
       />);
   };
 
-  const ClusterVms = ({ vms, hosts, templates, dispatch, config }) => {
+  /**
+   * Exported.
+   */
+  const ClusterView = ({ vms, hosts, templates, dispatch, config }) => {
     if (!vms) { // before cluster vms are loaded ; TODO: better handle state for the user
       return (<NoVmUnitialized />);
     }
@@ -107,52 +111,9 @@ export function lazyCreateClusterView() {
         })}
       </Listing>
     </div>);
-
-//    return (<div>Cluster VMs: {JSON.stringify(vms)}</div>);
-  };
-
-  /**
-   * Exported and top-level component.
-   */
-  const ClusterView = ({ store }) => {
-    const { config } = store.getState();
-    const { providerState } = config;
-    const dispatch = store.dispatch;
-
-    if (!providerState || !providerState.visibility) {
-      return (<div/>); // not yet initialized
-    }
-
-    // Hack to switch visibility of top-level components without parent cockpit:machines awareness
-    if (providerState.visibility.clusterView) {
-      $('#app').hide();
-      return (<ClusterVms vms={providerState.vms} hosts={providerState.hosts} templates={providerState.templates}
-                          dispatch={dispatch} config={config} />);
-    }
-
-    $('#app').show(); // Host Vms List will be rendered by parent cockpit:machine
-    return null;
-  };
-
-  /**
-   * Hook rendering React to another placeholder.
-   * Listens on store changes.
-   * Exported.
-   */
-  const renderClusterView = (store) => {
-    $("body").append('<div id="app-cluster"></div>');
-    const render = () => {
-      React.render(
-        React.createElement(ClusterView, {store}),
-        document.getElementById('app-cluster')
-      )
-    };
-    store.subscribe(render);
-    render();
   };
 
   exportedComponents.ClusterView = ClusterView;
-  exportedComponents.renderClusterView = renderClusterView;
 }
 
 export default exportedComponents;
