@@ -14,6 +14,13 @@ export function updateVm(vm) {
   }
 }
 
+export function updateTemplate(template) {
+  return {
+    type: 'OVIRT_UPDATE_TEMPLATE',
+    payload: template
+  }
+}
+
 export function removeUnlistedHosts({allHostIds}) {
   return {
     type: 'OVIRT_REMOVE_UNLISTED_HOSTS',
@@ -28,6 +35,15 @@ export function removeUnlistedVms({allVmsIds}) {
     type: 'OVIRT_REMOVE_UNLISTED_VMS',
     payload: {
       allVmsIds
+    }
+  }
+}
+
+export function removeUnlistedTemplates({allTemplateIds}) {
+  return {
+    type: 'OVIRT_REMOVE_UNLISTED_TEMPLATES',
+    payload: {
+      allTemplateIds
     }
   }
 }

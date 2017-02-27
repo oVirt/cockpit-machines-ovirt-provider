@@ -1,4 +1,4 @@
-import { updateHost, removeUnlistedHosts, updateVm, removeUnlistedVms } from './actions';
+import { updateHost, removeUnlistedHosts, updateVm, removeUnlistedVms, updateTemplate, removeUnlistedTemplates } from './actions';
 import { callOncePerTimeperiod, logDebug, logError, ovirtApiGet } from './helpers';
 import CONFIG from './config';
 
@@ -17,6 +17,7 @@ export function pollOvirt({dispatch}) {
       logDebug('Execution of oVirt polling');
       doRefreshHosts(dispatch);
       doRefreshVms(dispatch);
+      doRefreshTemplates(dispatch);
     }
   }).lastCall; // update the timestamp
 }
@@ -66,9 +67,6 @@ function doRefreshHosts(dispatch) {
       logError(`doRefreshHosts() failed, result: ${JSON.stringify(result)}`);
     }
   });
-
-//  dispatch(updateHost({id: '123', name: 'test1'}));
-//  dispatch(updateHost({id: '456', name: 'test2'}));
 }
 
 function doRefreshVms(dispatch) { // TODO: consider paging; there might be thousands of vms
@@ -100,6 +98,7 @@ function doRefreshVms(dispatch) { // TODO: consider paging; there might be thous
           os: {
             type: vm.os.type
           },
+          type: vm.type, // server, desktop
           stateless: vm.stateless,
           clusterId: vm.cluster.id,
           templateId: vm.template.id,
@@ -120,4 +119,57 @@ function mapOvirtStatusToLibvirtState(ovirtStatus) {
     default:
       return ovirtStatus
   }
+}
+
+function doRefreshTemplates(dispatch) { // TODO: consider paging; there might be thousands of templates
+  ovirtApiGet('templates').done(result => {
+    if (result && result.template && (result.template instanceof Array)) {
+      const allTemplateIds = [];
+      result.template.forEach( template => {
+        allTemplateIds.push(template.id);
+        dispatch(updateTemplate({ // TODO: consider batching
+          id: template.id,
+          name: template.name,
+          description: template.description,
+          cpu: {
+            architecture: template.cpu.architecture,
+            topology: {
+              sockets: template.cpu.topology.sockets,
+              cores: template.cpu.topology.cores,
+              threads: template.cpu.topology.threads
+            }
+          },
+          memory: template.memory,
+          creationTime: template.creation_time,
+
+          highAvailability: template.high_availability,
+          icons: {
+            largeId: template.large_icon ? template.large_icon.id : undefined,
+            smallId: template.small_icon ? template.small_icon.id : undefined,
+          },
+          os: {
+            type: template.os.type
+          },
+          stateless: template.stateless,
+          type: template.type, // server, desktop
+          version: {
+            name: template.version ? template.version.name : undefined,
+            number: template.version ? template.version.number : undefined,
+            baseTemplateId: template.version && template.version.base_template ? template.version.base_template.id : undefined,
+          },
+
+          // bios
+          // display
+          // migration
+          // memory_policy
+          // os.boot
+          // start_paused
+          // usb
+        }));
+      });
+      dispatch(removeUnlistedTemplates({allTemplateIds}));
+    } else {
+      logError(`doRefreshTemplates() failed, result: ${JSON.stringify(result)}`);
+    }
+  });
 }

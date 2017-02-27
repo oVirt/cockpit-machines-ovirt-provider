@@ -77,6 +77,30 @@ function vmsReducer (state, action) {
   }
 }
 
+function templatesReducer (state, action) {
+  state = state || {}; // object of 'templateId: template'
+
+  switch (action.type) {
+    case 'OVIRT_UPDATE_TEMPLATE':
+    {
+      const newState = Object.assign({}, state);
+      newState[action.payload.id] = newState[action.payload.id] || {};
+      Object.assign(newState[action.payload.id], action.payload); // merge instead of replace, is it as expected?
+      return newState;
+    }
+    case 'OVIRT_REMOVE_UNLISTED_TEMPLATES':
+    {
+      const newState = Object.assign({}, state);
+      const allTemplateIds = action.payload.allTemplateIds;
+      const toBeRemoved = Object.getOwnPropertyNames(newState).filter(id => (allTemplateIds.indexOf(id) < 0))
+      toBeRemoved.forEach(id => delete newState[id]);
+      return newState;
+    }
+    default:
+      return state;
+  }
+}
+
 function callSubReducer (newState, action, subreducer, substateName) {
   const newSubstate = subreducer(newState[substateName], action);
   if (newState[substateName] !== newSubstate) {
@@ -97,6 +121,7 @@ export function ovirtReducer (state, action) {
   newState = callSubReducer(newState, action, hostsReducer, 'hosts');
   newState = callSubReducer(newState, action, visibilityReducer, 'visibility');
   newState = callSubReducer(newState, action, vmsReducer, 'vms');
+  newState = callSubReducer(newState, action, templatesReducer, 'templates');
 
   return newState;
 }
