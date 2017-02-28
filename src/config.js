@@ -15,6 +15,7 @@ const CONFIG = { // will be dynamically replaced by content of CONFIG_FILE_URL w
   // TODO: increase to at least 1 minute
   ovirt_polling_interval: 5000, // in ms, oVirt polling is not called more then once per this time period. Single execution can be in progress at a time.
 
+  cockpitPort: 9090,
   token: null,
 };
 

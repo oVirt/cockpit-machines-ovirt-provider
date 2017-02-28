@@ -1,10 +1,11 @@
 import { getReact } from '../react.js';
-import { logDebug, logError, toGigaBytes, valueOrDefault } from '../helpers.js';
-import VdsmComponents from './vdsm.jsx';
+import { logError, toGigaBytes, valueOrDefault, isSameHostAddress } from '../helpers.js';
+import CONFIG from '../config';
+import { switchToplevelVisibility } from '../actions';
 
 import OVIRT_PROVIDER from '../provider';
 
-const $ = window.$;
+// const $ = window.$;
 // const cockpit = window.cockpit;
 
 const _ = (m) => m; // TODO: add translation
@@ -22,7 +23,6 @@ export function lazyCreateClusterView() {
   }
 
   const { Listing, ListingRow, StateIcon } = OVIRT_PROVIDER.parentReactComponents;
-  const { VdsmView } = VdsmComponents;
 
   const NoVm = () => {
     return (<div>
@@ -43,14 +43,22 @@ export function lazyCreateClusterView() {
   };
   const VmOS = ({ os }) => (<div>{os.type}</div>);
   const VmStateless = ({ stateless }) => (<div>{stateless}</div>);
-  const VmHost = ({ id, hosts }) => {
+  const VmHost = ({ id, hosts, dispatch }) => {
     if (!id || !hosts || !hosts[id]) {
       return null; // not running or data load not yet finished
     }
 
     const host = hosts[id];
-    const tooltip = `${_("Address")}: ${host.address}`;
-    return <span title={tooltip} data-toggle='tooltip' data-placement='left'>{host.name}</span>
+
+    if (isSameHostAddress(host.address)) {
+      return (<a href='#' onClick={() => dispatch(switchToplevelVisibility('hostView'))}>{host.name}</a>);
+    }
+
+    const cockpitUrl = `https://${host.address}:${CONFIG.cockpitPort}/machines`;
+    // just the <a href> without the onClick handler is not working
+    return (<a href={cockpitUrl} onClick={() => {window.top.location=cockpitUrl;}}>
+      {host.name}
+    </a>);
   };
   const VmTemplate = ({ id, templates }) => {
     if (!id || !templates || !templates[id]) {
@@ -64,7 +72,7 @@ export function lazyCreateClusterView() {
   };
   const VmDescription = ({ descr }) => (<span>{descr}</span>); // cropping is not needed, the text wraps
 
-  const Vm = ({ vm, hosts, templates, config }) => {
+  const Vm = ({ vm, hosts, templates, config, dispatch }) => {
     const stateIcon = (<StateIcon state={vm.state} config={config}/>);
 
     return (<ListingRow // TODO: icons? cluster? templates?
@@ -78,7 +86,7 @@ export function lazyCreateClusterView() {
             <VmHA highAvailability={vm.highAvailability} />,
             <VmStateless stateless={vm.stateless} />,
             vm.origin,
-            <VmHost id={vm.hostId} hosts={hosts} />,
+            <VmHost id={vm.hostId} hosts={hosts} dispatch={dispatch} />,
             stateIcon
             ]}
       />);
