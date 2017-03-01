@@ -51,12 +51,24 @@ function unableToMergeShellOverride() {
 
 function generateProviderConfig() {
   CONFIG_FILE=`dirname "$0"`/machines-ovirt.config
+
+  # DEBUG VERSION:
+#  echo === USING DEBUG CONFIG FILE ===
+#  echo "{ \
+#      \"debug\": true, \
+#      \"ovirt_polling_interval\": 5000, \
+#      \"cockpitPort\": 9090, \
+#      \"OVIRT_BASE_URL\": \"$ENGINE_URL\" \
+#    }" > $CONFIG_FILE || exit ${EXIT_NO_ACCESS_MACHINES_OVIRT_CONFIG}
+
+  # PRODUCTION VERSION
   echo "{ \
       \"debug\": false, \
       \"ovirt_polling_interval\": 120000, \
       \"cockpitPort\": 9090, \
       \"OVIRT_BASE_URL\": \"$ENGINE_URL\" \
     }" > $CONFIG_FILE || exit ${EXIT_NO_ACCESS_MACHINES_OVIRT_CONFIG}
+
   echo OK: $CONFIG_FILE generated
 }
 

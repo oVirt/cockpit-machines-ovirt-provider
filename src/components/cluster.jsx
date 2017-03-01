@@ -1,7 +1,7 @@
 import { getReact } from '../react.js';
-import { logError, toGigaBytes, valueOrDefault, isSameHostAddress } from '../helpers.js';
+import { logDebug, logError, toGigaBytes, valueOrDefault, isSameHostAddress, getHostAddress } from '../helpers.js';
 import CONFIG from '../config';
-import { switchToplevelVisibility } from '../actions';
+import { switchToplevelVisibility, startVm } from '../actions';
 
 import OVIRT_PROVIDER from '../provider';
 
@@ -22,7 +22,7 @@ export function lazyCreateClusterView() {
     return ;
   }
 
-  const { Listing, ListingRow, StateIcon } = OVIRT_PROVIDER.parentReactComponents;
+  const { Listing, ListingRow, StateIcon, DropdownButtons } = OVIRT_PROVIDER.parentReactComponents;
 
   const NoVm = () => {
     return (<div>
@@ -71,9 +71,31 @@ export function lazyCreateClusterView() {
     return <span title={tooltip} data-toggle='tooltip' data-placement='left'>{template.name}</span>
   };
   const VmDescription = ({ descr }) => (<span>{descr}</span>); // cropping is not needed, the text wraps
+  const VmActions = ({ vm, hostName, dispatch }) => {
+    if (['shut off', 'down'].indexOf(vm.state) >= 0) {
+      // TODO: disable button after execution
+      // TODO: handle failure
+      return (<DropdownButtons buttons={
+      [{
+          title: _("Run"),
+          action: () => dispatch(startVm(vm)),
+          id: `cluster-${vm.id}-run`
+        }, {
+          title: _("Run Here"),
+          action: () => dispatch(startVm(vm, hostName)),
+          id: `cluster-${vm.id}-run-here`
+        }]
+      } />);
+    }
+    return null;
+  };
 
   const Vm = ({ vm, hosts, templates, config, dispatch }) => {
     const stateIcon = (<StateIcon state={vm.state} config={config}/>);
+
+    const hostAddress = getHostAddress();
+    const hostId = Object.getOwnPropertyNames(hosts).find(hostId => hosts[hostId].address === hostAddress);
+    const hostName = hostId && hosts[hostId] ? hosts[hostId].name : undefined;
 
     return (<ListingRow // TODO: icons? cluster? templates?
       columns={[
@@ -87,6 +109,7 @@ export function lazyCreateClusterView() {
             <VmStateless stateless={vm.stateless} />,
             vm.origin,
             <VmHost id={vm.hostId} hosts={hosts} dispatch={dispatch} />,
+            <VmActions vm={vm} dispatch={dispatch} hostName={hostName} />,
             stateIcon
             ]}
       />);
@@ -107,7 +130,7 @@ export function lazyCreateClusterView() {
     return (<div className='container-fluid'>
       <Listing title={_("Cluster Virtual Machines")} columnTitles={[
         _("Name"), _("Description"), _("Memory"), _("Template"), _("vCPUs"), _("OS"),
-        _("HA"), _("Stateless"), _("Origin"), _("Host"), _("State")]}>
+        _("HA"), _("Stateless"), _("Origin"), _("Host"), _("Action"), _("State")]}>
         {Object.getOwnPropertyNames(vms).map(vmId => {
           return (
             <Vm vm={vms[vmId]}

@@ -1,4 +1,5 @@
 import OVIRT_PROVIDER from './provider';
+import { logDebug } from './helpers';
 
 export function updateHost(host) {
   return {
@@ -59,4 +60,11 @@ export function switchToplevelVisibility (topLevelVisibleComponent) {
       topLevelVisibleComponent
     }
   }
+}
+
+// --- Matching cockpit:machines action creators: --------------
+export function startVm(vm, hostName) {
+  const { virtMiddleware } = OVIRT_PROVIDER.actions;
+  logDebug(`startVm() called for vmId=${vm.id}, hostId=${hostName}`);
+  return virtMiddleware('START_VM', { name: vm.name, id: vm.id, connectionName: vm.connectionName, hostName });
 }

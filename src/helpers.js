@@ -57,10 +57,14 @@ export function ovirtApiPost (resource, input) {
   });
 }
 
-export function isSameHostAddress(hostAddress) { // TODO: check for all host addresses
+export function getHostAddress() {
   const localHost = window.location.host;
   const localAddress = localHost.substring(0, localHost.indexOf(':'));
-  return localAddress === hostAddress;
+  return localAddress;
+}
+
+export function isSameHostAddress(hostAddress) { // TODO: check for all host addresses
+  return getHostAddress() === hostAddress;
 }
 
 /**
@@ -86,6 +90,8 @@ export function callOncePerTimeperiod({call, delay, lastCall, lock}) {
     } else {
       logDebug('callOncePerTimeperiod() skipped, lock is busy');
     }
+  } else {
+    logDebug(`Skipping callOncePerTimeperiod(), not a window: lastcall=${lastCall}, delay=${delay}, now=${now}`);
   }
 
   return {

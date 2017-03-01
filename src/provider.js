@@ -170,7 +170,14 @@ OVIRT_PROVIDER = {
   START_VM: (payload) => {
     logDebug(`START_VM(payload: ${JSON.stringify(payload)})`);
     const id = payload.id;
-    return (dispatch) => ovirtApiPost(`vms/${id}/start`, '<action />');
+    const hostName = payload.hostName; // optional
+
+    const actionXml = hostName ?
+      `<action><vm><placement_policy><hosts><host><name>${hostName}</name></host></hosts></placement_policy></vm></action>`
+      : '<action />';
+
+    logDebug(`actionXml: ${actionXml}`);
+    return (dispatch) => ovirtApiPost(`vms/${id}/start`, actionXml);
   },
 
   MIGRATE_VM: ({ vmId, hostId }) => {
