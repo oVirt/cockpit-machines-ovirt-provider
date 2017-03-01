@@ -49,8 +49,8 @@ export function removeUnlistedTemplates({allTemplateIds}) {
   }
 }
 
-export function migrateVm (vmId, hostId) {
-  return OVIRT_PROVIDER.actions.virtMiddleware('MIGRATE_VM', { vmId, hostId });
+export function migrateVm (vmId, vmName, hostId) {
+  return OVIRT_PROVIDER.actions.virtMiddleware('MIGRATE_VM', { vmId, vmName, hostId });
 }
 
 export function switchToplevelVisibility (topLevelVisibleComponent) {
@@ -67,4 +67,16 @@ export function startVm(vm, hostName) {
   const { virtMiddleware } = OVIRT_PROVIDER.actions;
   logDebug(`startVm() called for vmId=${vm.id}, hostId=${hostName}`);
   return virtMiddleware('START_VM', { name: vm.name, id: vm.id, connectionName: vm.connectionName, hostName });
+}
+
+export function vmActionFailed({ name, connectionName, message, detail}) {
+  return {
+    type: 'VM_ACTION_FAILED',
+    payload: {
+      name,
+      connectionName,
+      message,
+      detail
+    }
+  };
 }

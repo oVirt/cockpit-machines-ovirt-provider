@@ -16,6 +16,7 @@
 import { logDebug, logError, ovirtApiPost, ovirtApiGet, fileDownload, loadCss } from './helpers.js'
 import { readConfiguration } from './configFuncs.js'
 import { doLogin } from './login.js'
+import { vmActionFailed } from './actions';
 
 import { registerReact } from './react.js';
 import { lazyCreateReactComponents } from './reactComponents';
@@ -32,6 +33,24 @@ const CONSOLE_TYPE_ID_MAP = { // TODO: replace by API call /vms/[ID]/graphicscon
   'vnc': '766e63',
   'rdp': 'rdp_not_yet_supported',
 };
+
+const QEMU_SYSTEM = 'system'; // conforms connection name defined in parent's cockpit:machines/config.es6
+
+function buildVmFailHandler ({dispatch, vmName, msg, data, exception}) {
+  return (data, exception) =>
+    dispatch(vmActionFailed({
+      name: vmName,
+      connectionName: QEMU_SYSTEM,
+      message: _("MIGRATE action failed"),
+      detail: {
+        data,
+        exception: data ?
+          (data.responseJSON && data.responseJSON.fault && data.responseJSON.fault.detail) ?
+            data.responseJSON.fault.detail
+            : exception
+          : exception,
+      }}));
+}
 
 /**
  * Implementation of cockpit:machines External Provider API for the oVirt
@@ -141,7 +160,12 @@ OVIRT_PROVIDER = {
   SHUTDOWN_VM: (payload) => {
     logDebug(`SHUTDOWN_VM(payload: ${JSON.stringify(payload)})`);
     const id = payload.id;
-    return (dispatch) => ovirtApiPost(`vms/${id}/shutdown`, '<action />');
+    const vmName = payload.name;
+    return (dispatch) => ovirtApiPost(
+      `vms/${id}/shutdown`,
+      '<action />',
+      buildVmFailHandler({dispatch, vmName, msg: _("SHUTDOWN action failed")})
+    );
   },
 
   /**
@@ -153,13 +177,23 @@ OVIRT_PROVIDER = {
   FORCEOFF_VM: (payload) => {
     logDebug(`FORCEOFF_VM(payload: ${JSON.stringify(payload)})`);
     const id = payload.id;
-    return (dispatch) => ovirtApiPost(`vms/${id}/stop`, '<action />');
+    const vmName = payload.name;
+    return (dispatch) => ovirtApiPost(
+      `vms/${id}/stop`,
+      '<action />',
+      buildVmFailHandler({dispatch, vmName, msg: _("FORCEOFF action failed")})
+    );
   },
 
   REBOOT_VM: (payload) => {
     logDebug(`REBOOT_VM(payload: ${JSON.stringify(payload)})`);
+    const vmName = payload.name;
     const id = payload.id;
-    return (dispatch) => ovirtApiPost(`vms/${id}/reboot`, '<action />');
+    return (dispatch) => ovirtApiPost(
+      `vms/${id}/reboot`,
+      '<action />',
+      buildVmFailHandler({dispatch, vmName, msg: _("REBOOT action failed")})
+    );
   },
 
   FORCEREBOOT_VM: (payload) => {
@@ -170,6 +204,7 @@ OVIRT_PROVIDER = {
   START_VM: (payload) => {
     logDebug(`START_VM(payload: ${JSON.stringify(payload)})`);
     const id = payload.id;
+    const vmName = payload.name;
     const hostName = payload.hostName; // optional
 
     const actionXml = hostName ?
@@ -177,15 +212,23 @@ OVIRT_PROVIDER = {
       : '<action />';
 
     logDebug(`actionXml: ${actionXml}`);
-    return (dispatch) => ovirtApiPost(`vms/${id}/start`, actionXml);
+    return (dispatch) => ovirtApiPost(
+      `vms/${id}/start`,
+      actionXml,
+      buildVmFailHandler({dispatch, vmName, msg: _("START action failed")})
+    );
   },
 
-  MIGRATE_VM: ({ vmId, hostId }) => {
+  MIGRATE_VM: ({ vmId, vmName, hostId }) => {
     logDebug(`MIGRATE_VM(payload: {vmId: "${vmId}", hostId: "${hostId}"}`);
     const action = hostId ?
       `<action><host id="${hostId}"/></action>` :
       '<action/>'
-    return (dispatch) => ovirtApiPost(`vms/${vmId}/migrate`, action);
+    return (dispatch) => ovirtApiPost(
+      `vms/${vmId}/migrate`,
+      action,
+      buildVmFailHandler({dispatch, vmName, msg: _("MIGRATE action failed")})
+    );
   },
 
   CONSOLE_VM (payload) {

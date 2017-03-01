@@ -70,25 +70,39 @@ export function lazyCreateClusterView() {
     const tooltip = `${_("Description")}: ${template.description}\n${_("Version")}: ${valueOrDefault(template.version.name, '')}\n${_("Version num")}: ${valueOrDefault(template.version.number, '')}\n${_("Base template")}: ${baseTemplateName}\n`;
     return <span title={tooltip} data-toggle='tooltip' data-placement='left'>{template.name}</span>
   };
-  const VmDescription = ({ descr }) => (<span>{descr}</span>); // cropping is not needed, the text wraps
   const VmActions = ({ vm, hostName, dispatch }) => {
     if (['shut off', 'down'].indexOf(vm.state) >= 0) {
       // TODO: disable button after execution
       // TODO: handle failure
-      return (<DropdownButtons buttons={
-      [{
-          title: _("Run"),
-          action: () => dispatch(startVm(vm)),
-          id: `cluster-${vm.id}-run`
-        }, {
-          title: _("Run Here"),
-          action: () => dispatch(startVm(vm, hostName)),
-          id: `cluster-${vm.id}-run-here`
-        }]
-      } />);
+      return (<span>
+        <DropdownButtons buttons={
+          [{
+              title: _("Run"),
+              action: () => dispatch(startVm(vm)),
+              id: `cluster-${vm.id}-run`
+            }, {
+              title: _("Run Here"),
+              action: () => dispatch(startVm(vm, hostName)),
+              id: `cluster-${vm.id}-run-here`
+            }]
+          } />
+        <VmLastMessage vm={vm}/>
+        </span>);
     }
     return null;
   };
+  const VmLastMessage = ({ vm }) => {
+    if (!vm.lastMessage) {
+      return null;
+    }
+    const detail = (vm.lastMessageDetail && vm.lastMessageDetail.exception) ? vm.lastMessageDetail.exception: vm.lastMessage;
+    return (
+      <p title={detail} data-toggle='tooltip'>
+        <span className='pficon-warning-triangle-o' />&nbsp;{vm.lastMessage}
+      </p>
+    );
+  };
+  const VmDescription = ({ descr }) => (<span>{descr}</span>); // cropping is not needed, the text wraps
 
   const Vm = ({ vm, hosts, templates, config, dispatch }) => {
     const stateIcon = (<StateIcon state={vm.state} config={config}/>);

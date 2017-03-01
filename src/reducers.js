@@ -80,6 +80,22 @@ function vmsReducer (state, action) {
       toBeRemoved.forEach(vmId => delete newState[vmId]);
       return newState;
     }
+    case 'VM_ACTION_FAILED': // this reducer seconds the implementation in cockpit:machines (see the 'vms' reducer there).
+    { // If an action failed on a VM running on this host, the error will be recorded on two places - it's as expected.
+      // If the VM is unknown for this host, the user needs to be still informed about the result
+      // So far, the VM is identified by "name" only
+      const vmId =  Object.getOwnPropertyNames(state).filter(vmId => state[vmId].name === action.payload.name);
+      if (!vmId) {
+        return state;
+      }
+
+      const updatedVm = Object.assign({}, state[vmId],
+        {lastMessage: action.payload.message, lastMessageDetail: action.payload.detail});
+      const updatedPartOfState = {};
+      updatedPartOfState[vmId] = updatedVm;
+      const newState = Object.assign({}, state, updatedPartOfState);
+      return newState;
+    }
     default:
       return state;
   }

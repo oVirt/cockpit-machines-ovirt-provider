@@ -22,7 +22,7 @@ export function deferFunctionCall ( func ) {
   return deferred.reject().promise;
 }
 
-export function ovirtApiGet (resource, custHeaders) {
+export function ovirtApiGet (resource, custHeaders, failHandler) {
   const headers = Object.assign({}, {
       'Accept': 'application/json',
       'Content-Type': 'application/xml',
@@ -34,13 +34,13 @@ export function ovirtApiGet (resource, custHeaders) {
     method: 'GET',
     headers,
     url: `${CONFIG.OVIRT_BASE_URL}/api/${resource}`,
-  }).fail( data => {
-    logError(`HTTP GET failed: ${JSON.stringify(data)}`);
-    // TODO: clear token from sessionStorage and refresh --> SSO will pass again
+  }).fail( (error, exception) => {
+    logError(`HTTP GET failed: ${JSON.stringify(error)}`);
+    handleOvirtError({ error, exception, failHandler });
   });
 }
 
-export function ovirtApiPost (resource, input) {
+export function ovirtApiPost (resource, input, failHandler) {
   logDebug(`ovirtApiPost(), token: ${CONFIG.token}`);
   return window.$.ajax({
     method: 'POST',
@@ -51,10 +51,33 @@ export function ovirtApiPost (resource, input) {
     },
     url: `${CONFIG.OVIRT_BASE_URL}/api/${resource}`,
     data: input
-  }).fail(function (data) {
-    logError(`HTTP POST failed: ${JSON.stringify(data)}`);
-    // TODO: clear token from sessionStorage and refresh --> SSO will pass again
+  }).fail( (error, exception) => {
+    logError(`HTTP POST failed: ${JSON.stringify(error)}`);
+    handleOvirtError({ error, exception, failHandler });
   });
+}
+
+export function handleOvirtError ({ error, exception, failHandler }) {
+  if (!error) {
+    logError(`oVirt operation failed but no error received`);
+    return ;
+  }
+
+  switch (error.status) {
+    case 401: { // Unauthorized
+      // clear token from sessionStorage and refresh --> SSO will pass again
+      window.sessionStorage.setItem('OVIRT_PROVIDER_TOKEN', undefined); // see login.js
+      // window.top.location.reload(true); // TODO: engine SSO keeps providing expired token
+      return ;
+    }
+    case 404:
+    default:
+      if (failHandler) {
+        failHandler(error, exception);
+      } else {
+        logError(`oVirt operation failed but no failHandler defined. Error: ${JSON.stringify(error)}`);
+      }
+  }
 }
 
 export function getHostAddress() {

@@ -44,7 +44,7 @@ export function lazyCreateOVirtTab () {
       const onActionCanceled = () => { this.setState({ confirmAction: false }); };
       const onActionConfirmed = () => {
         this.setState({ confirmAction: false });
-        dispatch(migrateVm(vm.id, this.state.selectedHostId));
+        dispatch(migrateVm(vm.id, vm.name, this.state.selectedHostId));
       };
 
       return (
