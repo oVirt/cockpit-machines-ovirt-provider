@@ -59,7 +59,7 @@ export function lazyCreateOVirtTab () {
             }
           </td>
           <td>
-            <select className='combobox form-control' onChange={onHostChange} disabled={this.state.confirmAction}>
+            <select className='combobox form-control ovirt-provider-migrateto-combo' onChange={onHostChange} disabled={this.state.confirmAction}>
               <option value={null} selected={!this.state.selectedHostId}>
                 <i>{_("Automatically selected host")}</i>
               </option>
@@ -79,16 +79,40 @@ export function lazyCreateOVirtTab () {
     }
   }
 
+  const VmTemplate = ({ clusterVm, templates }) => {
+    if (!templates || !clusterVm) {
+      return null;
+    }
+
+    const template = templates[clusterVm.templateId];
+    const version = template.version;
+    return (
+      <tr>
+        <td>
+          {_("Base template:")}
+        </td>
+        <td>
+          {version.name ?
+            (`${version.name} (${template.name})`)
+            : template.name}
+        </td>
+      </tr>
+    );
+  };
+
   // -------------------------------------------------------------------------------
   exportedComponents.OVirtTab = React.createClass({ // exported component
     render: function () {
       const { vm, providerState, dispatch } = this.props;
 
+      const clusterVm = providerState.vms[vm.id]; // 'vm' is from Libvirt, 'clusterVm' is from oVirt
+
       return (
         <table className='machines-width-max'>
           <tr className='machines-listing-ct-body-detail'>
             <td>
-              <table>
+              <table className='form-table-ct'>
+                <VmTemplate clusterVm={clusterVm} templates={providerState.templates} />
                 <MigrateTo vm={vm} hosts={providerState.hosts} dispatch={dispatch}/>
               </table>
             </td>

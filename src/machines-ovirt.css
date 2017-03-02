@@ -35,3 +35,7 @@
     width:100%;
     min-height: 300px;
 }
+
+.ovirt-provider-migrateto-combo {
+    max-width: 25em;
+}
