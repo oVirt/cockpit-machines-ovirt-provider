@@ -53,6 +53,8 @@ export function lazyCreateOVirtView() {
 
   /**
    * oVirt specific top-level component switch
+   *
+   * TODO: this will be adjusted once cockpit:machines gets support for switching top-level components
    */
   const OVirtView = ({ store }) => {
     const { config } = store.getState();

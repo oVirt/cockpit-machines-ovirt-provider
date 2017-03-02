@@ -36,12 +36,12 @@ const CONSOLE_TYPE_ID_MAP = { // TODO: replace by API call /vms/[ID]/graphicscon
 
 const QEMU_SYSTEM = 'system'; // conforms connection name defined in parent's cockpit:machines/config.es6
 
-function buildVmFailHandler ({dispatch, vmName, msg, data, exception}) {
+function buildVmFailHandler ({dispatch, vmName, msg}) {
   return (data, exception) =>
     dispatch(vmActionFailed({
       name: vmName,
       connectionName: QEMU_SYSTEM,
-      message: _("MIGRATE action failed"),
+      message: msg,
       detail: {
         data,
         exception: data ?

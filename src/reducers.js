@@ -24,6 +24,7 @@ function hostsReducer (state, action) {
   }
 }
 
+// TODO: this will be replaced once cockpit:machines gets support for switching top-level components
 function visibilityReducer (state, action) {
   state = state || {}; // object of clusterView:false, hostView:false, vdsmView:false
 
