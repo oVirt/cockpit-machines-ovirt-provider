@@ -59,16 +59,18 @@ Data retrieval (means list of VMs and their properties) is intentionally handled
 Active operations `(start, shutdown, restart)` are redirected to oVirt REST API to be performed.
 
   
-# To Be Done
+# Links
 
 - [1] Cockpit-machines external provider support
-    - open & merge cockpit-project upstream pull request
     - https://github.com/mareklibra/cockpit/tree/machines.providers
+    - and multiple follow-up patches
 - [2] oVirt CORS support
     - https://gerrit.ovirt.org/#/c/68529/
-    - or workaround till it's merged: `engine-config -s 'CORSAllowedOrigins=*'`
 - [3] The rest is tracked on [oVirt Trello](https://trello.com/c/QXXB6SHu/8-cockpit-upstream-vm-management)
-- [4] ovirt-engine/web-ui/authorizedRedirect.jsp (part of ovirt-engine 4.1 from ovirt-web-ui.0.1.1-2.rpm) is used to handle SSO redirect. Recently considering moving this JSP under enginesso.war
+
+# To Be Done
+
+- [1] ovirt-engine/web-ui/authorizedRedirect.jsp (part of ovirt-engine 4.1 from ovirt-web-ui.0.1.1-2.rpm) is used to handle SSO redirect. Recently considering moving this JSP under enginesso.war
   
 # Author(s)
 Please send author(s) any feedback on the project.
