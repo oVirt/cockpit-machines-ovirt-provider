@@ -22,6 +22,7 @@ import { registerReact } from './react.js';
 import { lazyCreateReactComponents } from './reactComponents';
 import { ovirtReducer }  from './reducers'
 import OVirtTabComponents from './components/hostVmsTabs.jsx';
+import VmDisksSubtab from './components/vmDisksSubtab.jsx';
 import { appendClusterSwitch } from './components/topLevelViewSwitch.jsx';
 
 import { pollOvirt } from './ovirt';
@@ -256,8 +257,30 @@ OVIRT_PROVIDER = {
   reducer: ovirtReducer,
 
   vmTabRenderers: [
-    {name: _("Cluster"), componentFactory: () => OVirtTabComponents.OVirtTab},
+    {
+      name: _("Cluster"),
+      componentFactory: () => OVirtTabComponents.OVirtTab
+    },
   ],
+
+  vmDisksActionsFactory: undefined,
+  vmDisksColumns: undefined,
+/* Not needed now, keeping as an example
+  vmDisksActionsFactory: ({vm}) => VmDisksSubtab.DummyActionsFactory({vm}), // listing-wide actions, see cockpit-components-listing.jsx
+  vmDisksColumns: [
+    {
+      title: _("oVirt"),
+      index: 3,
+      valueProvider: ({ vm, diskTarget }) => `vm: ${vm.name}, diskTarget: ${diskTarget}}`,
+    },
+    {
+      title: _("Foo"),
+      index: 5,
+      valueProvider: ({ vm, diskTarget }) => VmDisksSubtab.DummyFactory({ vm, diskTarget }),
+    },
+  ],
+*/
+
 };
 
 export default OVIRT_PROVIDER;
