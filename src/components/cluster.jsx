@@ -1,5 +1,5 @@
 import { getReact } from '../react.js';
-import { logDebug, logError, toGigaBytes, valueOrDefault, isSameHostAddress, getHostAddress } from '../helpers.js';
+import { logError, toGigaBytes, valueOrDefault, isSameHostAddress, getHostAddress } from '../helpers.js';
 import CONFIG from '../config';
 import { switchToplevelVisibility, startVm } from '../actions';
 
@@ -25,13 +25,19 @@ export function lazyCreateClusterView() {
   const { Listing, ListingRow, StateIcon, DropdownButtons } = OVIRT_PROVIDER.parentReactComponents;
 
   const NoVm = () => {
-    return (<div>
-      TODO: Data retrieved, but no VM found in oVirt!
-    </div>);
+    return (<div>TODO: Data retrieved, but no VM found in oVirt!</div>);
+  };
+
+  const NoTemplate = () => {
+    return (<div>TODO: Data retrieved, but no Template found in oVirt!</div>);
   };
 
   const NoVmUnitialized = () => { // TODO: improve
     return (<div>Please wait till VMs list is loaded from the server.</div>);
+  };
+
+  const NoTemplateUnitialized = () => { // TODO: improve
+    return (<div>Please wait till list of templates is loaded from the server.</div>);
   };
 
   const VmHA = ({ highAvailability }) => (<div>{highAvailability ? (_("yes")) : (_("no"))}</div>);
@@ -73,7 +79,6 @@ export function lazyCreateClusterView() {
   const VmActions = ({ vm, hostName, dispatch }) => {
     if (['shut off', 'down'].indexOf(vm.state) >= 0) {
       // TODO: disable button after execution
-      // TODO: handle failure
       return (<span>
         <DropdownButtons buttons={
           [{
@@ -111,7 +116,7 @@ export function lazyCreateClusterView() {
     const hostId = Object.getOwnPropertyNames(hosts).find(hostId => hosts[hostId].address === hostAddress);
     const hostName = hostId && hosts[hostId] ? hosts[hostId].name : undefined;
 
-    return (<ListingRow // TODO: icons? cluster? templates?
+    return (<ListingRow // TODO: icons? cluster?
       columns={[
             {name: vm.name, 'header': true},
             <VmDescription descr={vm.description} />,
@@ -155,12 +160,54 @@ export function lazyCreateClusterView() {
     </div>);
   };
 
-  const ClusterTemplates = ({ templates, dispatch }) => {
+  const TemplateActions = ({ template, dispatch}) => {
+    // TODO: error handling
     return (
-      <div>
-        List of Templates
-      </div>
-    );
+      <span>
+        <button onClick={() => {}}>{_("Create VM")}</button>
+      </span>);
+
+  };
+
+  const Template = ({ template, templates, dispatch }) => {
+    return (<ListingRow
+      columns={[
+            {name: template.name, 'header': true},
+            template.version.name,
+            template.version.baseTemplateId ? (templates[template.version.baseTemplateId].name) : null,
+            <VmDescription descr={template.description} />,
+            <VmMemory mem={template.memory} />,
+            <VmCpu cpu={template.cpu} />,
+            <VmOS os={template.os} />,
+            <VmHA highAvailability={template.highAvailability} />,
+            <VmStateless stateless={template.stateless} />,
+            <TemplateActions template={template} dispatch={dispatch} />
+            ]}
+    />);
+  };
+
+  const ClusterTemplates = ({ templates, dispatch }) => {
+    if (!templates) { // before cluster templates are loaded ; TODO: better handle state from the user perspective
+      return (<NoTemplateUnitialized />);
+    }
+
+    if (templates.length === 0) { // there are no templates
+      return (<NoTemplate />);
+    }
+
+    return (<div className='container-fluid'>
+      <Listing title={_("Cluster Templates")} columnTitles={[
+        _("Name"), _("Version"), _("Base Template"), _("Description"), _("Memory"), _("vCPUs"), _("OS"),
+        _("HA"), _("Stateless"), _("Action")]}>
+        {Object.getOwnPropertyNames(templates).map(templateId => {
+          return (
+            <Template template={templates[templateId]}
+                      templates={templates}
+                      dispatch={dispatch}
+            />);
+        })}
+      </Listing>
+    </div>);
   };
 
   const ClusterSubView = ({ dispatch }) => {
