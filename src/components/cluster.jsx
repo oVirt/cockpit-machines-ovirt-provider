@@ -129,11 +129,8 @@ export function lazyCreateClusterView() {
       />);
   };
 
-  /**
-   * Exported.
-   */
-  const ClusterView = ({ vms, hosts, templates, dispatch, config }) => {
-    if (!vms) { // before cluster vms are loaded ; TODO: better handle state for the user
+  const ClusterVms = ({ vms, hosts, templates, dispatch, config }) => {
+    if (!vms) { // before cluster vms are loaded ; TODO: better handle state from the user perspective
       return (<NoVmUnitialized />);
     }
 
@@ -156,6 +153,44 @@ export function lazyCreateClusterView() {
         })}
       </Listing>
     </div>);
+  };
+
+  const ClusterTemplates = ({ templates, dispatch }) => {
+    return (
+      <div>
+        List of Templates
+      </div>
+    );
+  };
+
+  const ClusterSubView = ({ dispatch }) => {
+    return (
+      <span className='ovirt-provider-sublevel-switch'>
+        <a href='#' onClick={() => dispatch(switchToplevelVisibility('clusterView', 'machines'))}>{_("Machines")}</a>&nbsp;|&nbsp;
+        <a href='#' onClick={() => dispatch(switchToplevelVisibility('clusterView', 'templates'))}>{_("Templates")}</a>
+      </span>
+    );
+  };
+
+  /**
+   * Exported.
+   */
+  const ClusterView = ({ vms, hosts, templates, dispatch, config, view }) => {
+    /*if (view.subview === 'templates') { // conforms providerState.visibility.clusterView
+      return (<ClusterTemplates templates={templates} dispatch={dispatch} />);
+    }
+
+    return (<ClusterVms vms={vms} hosts={hosts} templates={templates} dispatch={dispatch} config={config} />);
+    */
+    return (
+      <div>
+        <ClusterSubView dispatch={dispatch} />
+        {view.subview === 'templates'
+          ? (<ClusterTemplates templates={templates} dispatch={dispatch} />)
+          : (<ClusterVms vms={vms} hosts={hosts} templates={templates} dispatch={dispatch} config={config} />)
+        }
+      </div>
+    );
   };
 
   exportedComponents.ClusterView = ClusterView;

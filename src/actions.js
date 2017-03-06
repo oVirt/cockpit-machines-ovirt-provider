@@ -53,11 +53,12 @@ export function migrateVm (vmId, vmName, hostId) {
   return OVIRT_PROVIDER.actions.virtMiddleware('MIGRATE_VM', { vmId, vmName, hostId });
 }
 
-export function switchToplevelVisibility (topLevelVisibleComponent) {
+export function switchToplevelVisibility (topLevelVisibleComponent, subview) {
   return {
     type: 'OVIRT_SWITCH_VISIBILITY',
     payload: {
-      topLevelVisibleComponent
+      topLevelVisibleComponent,
+      subview,
     }
   }
 }

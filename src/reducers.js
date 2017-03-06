@@ -35,7 +35,7 @@ function visibilityReducer (state, action) {
 
       switch (action.payload.topLevelVisibleComponent) {
         case 'clusterView': {
-          newState.clusterView = true; // replace by object, if finer granularity needed
+          newState.clusterView = { subview: action.payload.subview };
           newState.hostView = false;
           newState.vdsmView = null; // replace by object, if finer granularity needed
           return newState;

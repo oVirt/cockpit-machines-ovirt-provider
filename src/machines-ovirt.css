@@ -1,7 +1,12 @@
 .ovirt-provider-toplevel-switch {
     position: absolute;
     top: 0%;
-    right: 1%;
+    right: 1em;
+}
+
+.ovirt-provider-sublevel-switch {
+    float: right;
+    padding-right: 1em;
 }
 
 .ovirt-provider-crop {

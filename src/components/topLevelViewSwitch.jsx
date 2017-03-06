@@ -69,7 +69,7 @@ export function lazyCreateOVirtView() {
     if (providerState.visibility.clusterView) {
       $('#app').hide();
       return (<ClusterView vms={providerState.vms} hosts={providerState.hosts} templates={providerState.templates}
-                          dispatch={dispatch} config={config} />);
+                          dispatch={dispatch} config={config} view={providerState.visibility.clusterView} />);
     } else if (providerState.visibility.vdsmView) {
       $('#app').hide();
       return (<VdsmView dispatch={dispatch} />);
