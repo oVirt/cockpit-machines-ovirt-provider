@@ -25,7 +25,7 @@ import OVirtTabComponents from './components/hostVmsTabs.jsx';
 import VmDisksSubtab from './components/vmDisksSubtab.jsx';
 import { appendClusterSwitch } from './components/topLevelViewSwitch.jsx';
 
-import { pollOvirt } from './ovirt';
+import { pollOvirt, forceNextOvirtPoll } from './ovirt';
 
 const _ = (m) => m; // TODO: add translation
 
@@ -162,6 +162,7 @@ OVIRT_PROVIDER = {
     logDebug(`SHUTDOWN_VM(payload: ${JSON.stringify(payload)})`);
     const id = payload.id;
     const vmName = payload.name;
+    forceNextOvirtPoll();
     return (dispatch) => ovirtApiPost(
       `vms/${id}/shutdown`,
       '<action />',
@@ -179,6 +180,7 @@ OVIRT_PROVIDER = {
     logDebug(`FORCEOFF_VM(payload: ${JSON.stringify(payload)})`);
     const id = payload.id;
     const vmName = payload.name;
+    forceNextOvirtPoll();
     return (dispatch) => ovirtApiPost(
       `vms/${id}/stop`,
       '<action />',
@@ -190,6 +192,7 @@ OVIRT_PROVIDER = {
     logDebug(`REBOOT_VM(payload: ${JSON.stringify(payload)})`);
     const vmName = payload.name;
     const id = payload.id;
+    forceNextOvirtPoll();
     return (dispatch) => ovirtApiPost(
       `vms/${id}/reboot`,
       '<action />',
@@ -212,7 +215,7 @@ OVIRT_PROVIDER = {
       `<action><vm><placement_policy><hosts><host><name>${hostName}</name></host></hosts></placement_policy></vm></action>`
       : '<action />';
 
-    logDebug(`actionXml: ${actionXml}`);
+    forceNextOvirtPoll();
     return (dispatch) => ovirtApiPost(
       `vms/${id}/start`,
       actionXml,
@@ -224,7 +227,8 @@ OVIRT_PROVIDER = {
     logDebug(`MIGRATE_VM(payload: {vmId: "${vmId}", hostId: "${hostId}"}`);
     const action = hostId ?
       `<action><host id="${hostId}"/></action>` :
-      '<action/>'
+      '<action/>';
+    forceNextOvirtPoll();
     return (dispatch) => ovirtApiPost(
       `vms/${vmId}/migrate`,
       action,
@@ -245,6 +249,7 @@ OVIRT_PROVIDER = {
       return ;
     }
 
+    forceNextOvirtPoll();
     return (dispatch) => ovirtApiGet(
       `vms/${vmId}/graphicsconsoles/${consoleId}`,
       { Accept: 'application/x-virt-viewer' }).then(vvFile => {

@@ -22,6 +22,15 @@ export function pollOvirt({dispatch}) {
   }).lastCall; // update the timestamp
 }
 
+/**
+ * Shortens the period for next oVirt polling, so it will be executed at next earliest opportunity.
+ *
+ * Useful to shorten polling delay after user action.
+ */
+export function forceNextOvirtPoll() {
+  lastOvirtPoll = -1;
+}
+
 let pollOvirtLocked = false;
 function pollOvirtLock(toBeLocked) {
   if (toBeLocked) {
