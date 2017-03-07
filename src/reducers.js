@@ -24,6 +24,30 @@ function hostsReducer (state, action) {
   }
 }
 
+function clustersReducer (state, action) {
+  state = state || {}; // object of 'clusterId: cluster'
+
+  switch (action.type) {
+    case 'OVIRT_UPDATE_CLUSTER':
+    {
+      const newState = Object.assign({}, state);
+      newState[action.payload.id] = newState[action.payload.id] || {};
+      Object.assign(newState[action.payload.id], action.payload); // merge instead of replace, is it as expected?
+      return newState;
+    }
+    case 'OVIRT_REMOVE_UNLISTED_CLUSTERS':
+    {
+      const newState = Object.assign({}, state);
+      const allIds = action.payload.allClusterIds;
+      const toBeRemoved = Object.getOwnPropertyNames(newState).filter(id => (allIds.indexOf(id) < 0))
+      toBeRemoved.forEach(id => delete newState[id]);
+      return newState;
+    }
+    default:
+      return state;
+  }
+}
+
 // TODO: this will be replaced once cockpit:machines gets support for switching top-level components
 function visibilityReducer (state, action) {
   state = state || {}; // object of clusterView:false, hostView:false, vdsmView:false
@@ -171,6 +195,7 @@ export function ovirtReducer (state, action) {
   newState = callSubReducer(newState, action, visibilityReducer, 'visibility');
   newState = callSubReducer(newState, action, vmsReducer, 'vms');
   newState = callSubReducer(newState, action, templatesReducer, 'templates');
+  newState = callSubReducer(newState, action, clustersReducer, 'clusters');
 
   return newState;
 }

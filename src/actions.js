@@ -22,6 +22,13 @@ export function updateTemplate(template) {
   }
 }
 
+export function updateCluster(cluster) {
+  return {
+    type: 'OVIRT_UPDATE_CLUSTER',
+    payload: cluster
+  }
+}
+
 export function removeUnlistedHosts({allHostIds}) {
   return {
     type: 'OVIRT_REMOVE_UNLISTED_HOSTS',
@@ -45,6 +52,15 @@ export function removeUnlistedTemplates({allTemplateIds}) {
     type: 'OVIRT_REMOVE_UNLISTED_TEMPLATES',
     payload: {
       allTemplateIds
+    }
+  }
+}
+
+export function removeUnlistedClusters({allClusterIds}) {
+  return {
+    type: 'OVIRT_REMOVE_UNLISTED_CLUSTERS',
+    payload: {
+      allClusterIds
     }
   }
 }

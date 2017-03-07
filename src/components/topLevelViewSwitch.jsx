@@ -68,8 +68,13 @@ export function lazyCreateOVirtView() {
     // Hack to switch visibility of top-level components without parent cockpit:machines awareness
     if (providerState.visibility.clusterView) {
       $('#app').hide();
-      return (<ClusterView vms={providerState.vms} hosts={providerState.hosts} templates={providerState.templates}
-                          dispatch={dispatch} config={config} view={providerState.visibility.clusterView} />);
+      return (<ClusterView vms={providerState.vms}
+                           hosts={providerState.hosts}
+                           templates={providerState.templates}
+                           clusters={providerState.clusters}
+                           dispatch={dispatch}
+                           config={config}
+                           view={providerState.visibility.clusterView} />);
     } else if (providerState.visibility.vdsmView) {
       $('#app').hide();
       return (<VdsmView dispatch={dispatch} />);

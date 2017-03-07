@@ -1,4 +1,4 @@
-import { updateHost, removeUnlistedHosts, updateVm, removeUnlistedVms, updateTemplate, removeUnlistedTemplates } from './actions';
+import { updateHost, removeUnlistedHosts, updateVm, removeUnlistedVms, updateTemplate, removeUnlistedTemplates, updateCluster, removeUnlistedClusters } from './actions';
 import { callOncePerTimeperiod, logDebug, logError, ovirtApiGet } from './helpers';
 import CONFIG from './config';
 
@@ -15,6 +15,7 @@ export function pollOvirt({dispatch}) {
     lock: pollOvirtLock,
     call: () => {
       logDebug('Execution of oVirt polling');
+      // TODO: use Promise.all().then()
       doRefreshHosts(dispatch);
       doRefreshVms(dispatch);
       doRefreshTemplates(dispatch);
@@ -124,7 +125,7 @@ function doRefreshVms(dispatch) { // TODO: consider paging; there might be thous
 }
 
 function mapOvirtStatusToLibvirtState(ovirtStatus) {
-  switch (ovirtStatus) {// TODO finish
+  switch (ovirtStatus) {// TODO: finish - add additional states
     case 'up': return 'running';
     case 'down': return 'shut off';
     default:
@@ -182,6 +183,26 @@ function doRefreshTemplates(dispatch) { // TODO: consider paging; there might be
       dispatch(removeUnlistedTemplates({allTemplateIds}));
     } else {
       logError(`doRefreshTemplates() failed, result: ${JSON.stringify(result)}`);
+    }
+  });
+}
+
+function doRefreshClusters(dispatch) {
+  logDebug(`doRefreshClusters() called`);
+  ovirtApiGet('clusters').done(result => {
+    if (result && result.cluster && (result.cluster instanceof Array)) {
+      const allClusterIds  = [];
+      result.cluster.forEach( cluster => {
+        allClusterIds.push(cluster.id);
+        dispatch(updateCluster({
+          id: cluster.id,
+          name: cluster.name,
+          // TODO: add more, if needed
+        }));
+      });
+      dispatch(removeUnlistedClusters({allClusterIds}));
+    } else {
+      logError(`doRefreshClusters() failed, result: ${JSON.stringify(result)}`);
     }
   });
 }

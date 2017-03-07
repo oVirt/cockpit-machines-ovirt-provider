@@ -1,5 +1,6 @@
 import { getReact } from '../react.js';
 import { logDebug, logError, toGigaBytes, valueOrDefault, isSameHostAddress, getHostAddress } from '../helpers.js';
+import { getCurrentHost } from '../selectors';
 import CONFIG from '../config';
 import { switchToplevelVisibility, startVm, createVm } from '../actions';
 
@@ -53,9 +54,7 @@ export function lazyCreateClusterView() {
     if (!id || !hosts || !hosts[id]) {
       return null; // not running or data load not yet finished
     }
-
     const host = hosts[id];
-
     if (isSameHostAddress(host.address)) {
       return (<a href='#' onClick={() => dispatch(switchToplevelVisibility('hostView'))}>{host.name}</a>);
     }
@@ -66,6 +65,7 @@ export function lazyCreateClusterView() {
       {host.name}
     </a>);
   };
+
   const VmTemplate = ({ id, templates }) => {
     if (!id || !templates || !templates[id]) {
       return null; // not running or data load not yet finished
@@ -76,6 +76,7 @@ export function lazyCreateClusterView() {
     const tooltip = `${_("Description")}: ${template.description}\n${_("Version")}: ${valueOrDefault(template.version.name, '')}\n${_("Version num")}: ${valueOrDefault(template.version.number, '')}\n${_("Base template")}: ${baseTemplateName}\n`;
     return <span title={tooltip} data-toggle='tooltip' data-placement='left'>{template.name}</span>
   };
+
   const VmActions = ({ vm, hostName, dispatch }) => {
     if (['shut off', 'down'].indexOf(vm.state) >= 0) {
       // TODO: disable button after execution
@@ -96,6 +97,18 @@ export function lazyCreateClusterView() {
     }
     return null;
   };
+
+  const VmCluster = ({ id, clusters }) => {
+    if (!id || !clusters || !clusters[id]) {
+      return null;
+    }
+    return (
+      <div>
+        {clusters[id].name}
+      </div>
+    );
+  };
+
   const VmLastMessage = ({ vm }) => {
     if (!vm.lastMessage) {
       return null;
@@ -109,19 +122,20 @@ export function lazyCreateClusterView() {
   };
   const VmDescription = ({ descr }) => (<span>{descr}</span>); // cropping is not needed, the text wraps
 
-  const Vm = ({ vm, hosts, templates, config, dispatch }) => {
+  const Vm = ({ vm, hosts, templates, clusters, config, dispatch }) => {
     const stateIcon = (<StateIcon state={vm.state} config={config}/>);
 
     const hostAddress = getHostAddress();
     const hostId = Object.getOwnPropertyNames(hosts).find(hostId => hosts[hostId].address === hostAddress);
     const hostName = hostId && hosts[hostId] ? hosts[hostId].name : undefined;
 
-    return (<ListingRow // TODO: icons? cluster?
+    return (<ListingRow // TODO: icons?
       columns={[
             {name: vm.name, 'header': true},
             <VmDescription descr={vm.description} />,
-            <VmMemory mem={vm.memory} />,
+            <VmCluster id={vm.clusterId} clusters={clusters} />,
             <VmTemplate id={vm.templateId} templates={templates} />,
+            <VmMemory mem={vm.memory} />,
             <VmCpu cpu={vm.cpu} />,
             <VmOS os={vm.os} />,
             <VmHA highAvailability={vm.highAvailability} />,
@@ -134,7 +148,7 @@ export function lazyCreateClusterView() {
       />);
   };
 
-  const ClusterVms = ({ vms, hosts, templates, dispatch, config }) => {
+  const ClusterVms = ({ vms, hosts, templates, clusters, dispatch, config }) => {
     if (!vms) { // before cluster vms are loaded ; TODO: better handle state from the user perspective
       return (<NoVmUnitialized />);
     }
@@ -145,13 +159,14 @@ export function lazyCreateClusterView() {
 
     return (<div className='container-fluid'>
       <Listing title={_("Cluster Virtual Machines")} columnTitles={[
-        _("Name"), _("Description"), _("Memory"), _("Template"), _("vCPUs"), _("OS"),
+        _("Name"), _("Description"), _("Cluster"), _("Template"), _("Memory"), _("vCPUs"), _("OS"),
         _("HA"), _("Stateless"), _("Origin"), _("Host"), _("Action"), _("State")]}>
         {Object.getOwnPropertyNames(vms).map(vmId => {
           return (
             <Vm vm={vms[vmId]}
                 hosts={hosts}
                 templates={templates}
+                clusters={clusters}
                 config={config}
                 dispatch={dispatch}
             />);
@@ -231,7 +246,7 @@ export function lazyCreateClusterView() {
     />);
   };
 
-  const ClusterTemplates = ({ templates, dispatch }) => {
+  const ClusterTemplates = ({ templates, hosts, clusters, dispatch }) => {
     if (!templates) { // before cluster templates are loaded ; TODO: better handle state from the user perspective
       return (<NoTemplateUnitialized />);
     }
@@ -240,7 +255,9 @@ export function lazyCreateClusterView() {
       return (<NoTemplate />);
     }
 
-    const cluster = { name: 'myCluster' }; // TODO!!! Read cluster entity from server
+    const myHost = getCurrentHost(hosts);
+    const hostCluster = myHost && myHost.clusterId && clusters[myHost.clusterId] ? clusters[myHost.clusterId] : undefined;
+    const cluster = { name: hostCluster ? hostCluster.name : 'Default' };
 
     return (<div className='container-fluid'>
       <Listing title={_("Cluster Templates")} columnTitles={[
@@ -270,13 +287,13 @@ export function lazyCreateClusterView() {
   /**
    * Exported.
    */
-  const ClusterView = ({ vms, hosts, templates, dispatch, config, view }) => {
+  const ClusterView = ({ vms, hosts, templates, clusters, dispatch, config, view }) => {
     return (
       <div>
         <ClusterSubView dispatch={dispatch} />
         {view.subview === 'templates'
-          ? (<ClusterTemplates templates={templates} dispatch={dispatch} />)
-          : (<ClusterVms vms={vms} hosts={hosts} templates={templates} dispatch={dispatch} config={config} />)
+          ? (<ClusterTemplates templates={templates} hosts={hosts} clusters={clusters} dispatch={dispatch} />)
+          : (<ClusterVms vms={vms} hosts={hosts} templates={templates} clusters={clusters} dispatch={dispatch} config={config} />)
         }
       </div>
     );
