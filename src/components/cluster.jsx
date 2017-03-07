@@ -1,7 +1,7 @@
 import { getReact } from '../react.js';
-import { logError, toGigaBytes, valueOrDefault, isSameHostAddress, getHostAddress } from '../helpers.js';
+import { logDebug, logError, toGigaBytes, valueOrDefault, isSameHostAddress, getHostAddress } from '../helpers.js';
 import CONFIG from '../config';
-import { switchToplevelVisibility, startVm } from '../actions';
+import { switchToplevelVisibility, startVm, createVm } from '../actions';
 
 import OVIRT_PROVIDER from '../provider';
 
@@ -160,16 +160,61 @@ export function lazyCreateClusterView() {
     </div>);
   };
 
-  const TemplateActions = ({ template, dispatch}) => {
-    // TODO: error handling
+  class CreateVmFromTemplate extends React.Component {
+    constructor (props) {
+      super(props);
+      this.state = {
+        enterDetails: false,
+        vmName: '',
+      };
+
+      this.onDoCreateVm = this.onDoCreateVm.bind(this);
+      this.onCreateVm = this.onCreateVm.bind(this);
+
+      this.onVmNameChanged = this.onVmNameChanged.bind(this);
+    }
+
+    onCreateVm () {
+      this.setState({ enterDetails: true, vmName: '' });
+    }
+
+    onVmNameChanged (e) {
+      this.setState({ vmName: e.target.value })
+    }
+
+    onDoCreateVm () {
+      logDebug(`onDoCreateVm: ${this.state.vmName}`);
+      this.props.dispatch(createVm({
+        templateName: this.props.template.name,
+        clusterName: this.props.cluster.name,
+        vm: { name: this.state.vmName }
+      }));
+      this.setState({ enterDetails: false, vmName: '' });
+    }
+
+    render () {
+      if (this.state.enterDetails) {
+        return (
+          <div>
+            <input className='form-control' type='text' placeholder={_("Enter New VM name")} value={this.state.vmName} onChange={this.onVmNameChanged} />
+            <button onClick={this.onDoCreateVm} className='btn btn-default btn-danger'>{_("Create")}</button>
+          </div>
+        );
+      }
+
+      return (<button onClick={this.onCreateVm}>{_("Create VM")}</button>);
+    }
+  }
+
+  const TemplateActions = ({ template, cluster, dispatch}) => {
     return (
       <span>
-        <button onClick={() => {}}>{_("Create VM")}</button>
+        <CreateVmFromTemplate template={template} cluster={cluster} dispatch={dispatch} />
+        <VmLastMessage vm={template} />
       </span>);
-
   };
 
-  const Template = ({ template, templates, dispatch }) => {
+  const Template = ({ template, templates, cluster, dispatch }) => {
     return (<ListingRow
       columns={[
             {name: template.name, 'header': true},
@@ -181,7 +226,7 @@ export function lazyCreateClusterView() {
             <VmOS os={template.os} />,
             <VmHA highAvailability={template.highAvailability} />,
             <VmStateless stateless={template.stateless} />,
-            <TemplateActions template={template} dispatch={dispatch} />
+            <TemplateActions template={template} cluster={cluster} dispatch={dispatch} />
             ]}
     />);
   };
@@ -195,6 +240,8 @@ export function lazyCreateClusterView() {
       return (<NoTemplate />);
     }
 
+    const cluster = { name: 'myCluster' }; // TODO!!! Read cluster entity from server
+
     return (<div className='container-fluid'>
       <Listing title={_("Cluster Templates")} columnTitles={[
         _("Name"), _("Version"), _("Base Template"), _("Description"), _("Memory"), _("vCPUs"), _("OS"),
@@ -203,6 +250,7 @@ export function lazyCreateClusterView() {
           return (
             <Template template={templates[templateId]}
                       templates={templates}
+                      cluster={cluster}
                       dispatch={dispatch}
             />);
         })}
@@ -223,12 +271,6 @@ export function lazyCreateClusterView() {
    * Exported.
    */
   const ClusterView = ({ vms, hosts, templates, dispatch, config, view }) => {
-    /*if (view.subview === 'templates') { // conforms providerState.visibility.clusterView
-      return (<ClusterTemplates templates={templates} dispatch={dispatch} />);
-    }
-
-    return (<ClusterVms vms={vms} hosts={hosts} templates={templates} dispatch={dispatch} config={config} />);
-    */
     return (
       <div>
         <ClusterSubView dispatch={dispatch} />

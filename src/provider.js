@@ -37,18 +37,19 @@ const CONSOLE_TYPE_ID_MAP = { // TODO: replace by API call /vms/[ID]/graphicscon
 
 const QEMU_SYSTEM = 'system'; // conforms connection name defined in parent's cockpit:machines/config.es6
 
-function buildVmFailHandler ({dispatch, vmName, msg}) {
+function buildVmFailHandler ({dispatch, vmName, msg, detailForNonexisting}) {
   return (data, exception) =>
     dispatch(vmActionFailed({
       name: vmName,
+      detailForNonexisting, // used i.e. for failed Create VM
       connectionName: QEMU_SYSTEM,
       message: msg,
       detail: {
         data,
         exception: data ?
-          (data.responseJSON && data.responseJSON.fault && data.responseJSON.fault.detail) ?
-            data.responseJSON.fault.detail
-            : exception
+          (data.responseJSON && data.responseJSON.fault && data.responseJSON.fault.detail) ? data.responseJSON.fault.detail
+            : ( data.responseJSON && data.responseJSON.detail ? data.responseJSON.detail
+            : exception)
           : exception,
       }}));
 }
@@ -257,6 +258,24 @@ OVIRT_PROVIDER = {
           fileName: `${type}Console.vv`,
           mimeType: 'application/x-virt-viewer'});
     });
+  },
+
+  CREATE_VM (payload) {
+    logDebug(`CREATE_VM: payload = ${JSON.stringify(payload)}`);
+    const templateName = payload.templateName || 'blank'; // optional
+    const clusterName = payload.clusterName || 'default'; // optional
+    const { vm } = payload;
+
+    const name = `<name>${vm.name}</name>`;
+    const template = `<template><name>${templateName}</name></template>`;
+    const cluster =  `<cluster><name>${clusterName}</name></cluster>`;
+    const action = `<vm>${name}${cluster}${template}</vm>`;
+
+    return (dispatch) => ovirtApiPost(
+      `vms`,
+      action,
+      buildVmFailHandler({dispatch, vmName: vm.name, detailForNonexisting: { templateName }, msg: _("CREATE VM action failed")})
+    );
   },
 
   reducer: ovirtReducer,

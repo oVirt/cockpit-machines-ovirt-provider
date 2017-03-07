@@ -53,6 +53,10 @@ export function migrateVm (vmId, vmName, hostId) {
   return OVIRT_PROVIDER.actions.virtMiddleware('MIGRATE_VM', { vmId, vmName, hostId });
 }
 
+export function createVm ({ templateName, clusterName, vm }) {
+  return OVIRT_PROVIDER.actions.virtMiddleware('CREATE_VM', { templateName, clusterName, vm });
+}
+
 export function switchToplevelVisibility (topLevelVisibleComponent, subview) {
   return {
     type: 'OVIRT_SWITCH_VISIBILITY',
@@ -70,14 +74,15 @@ export function startVm(vm, hostName) {
   return virtMiddleware('START_VM', { name: vm.name, id: vm.id, connectionName: vm.connectionName, hostName });
 }
 
-export function vmActionFailed({ name, connectionName, message, detail}) {
+export function vmActionFailed({ name, connectionName, message, detail, detailForNonexisting}) {
   return {
     type: 'VM_ACTION_FAILED',
     payload: {
       name,
       connectionName,
       message,
-      detail
+      detail,
+      detailForNonexisting,
     }
   };
 }

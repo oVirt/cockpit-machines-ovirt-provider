@@ -45,6 +45,7 @@ function pollOvirtLock(toBeLocked) {
 }
 
 function doRefreshHosts(dispatch) {
+  logDebug(`doRefreshHosts() called`);
   ovirtApiGet('hosts').done(result => {
     if (result && result.host && (result.host instanceof Array)) {
       const allHostIds = [];
@@ -79,6 +80,7 @@ function doRefreshHosts(dispatch) {
 }
 
 function doRefreshVms(dispatch) { // TODO: consider paging; there might be thousands of vms
+  logDebug(`doRefreshVms() called`);
   ovirtApiGet('vms').done(result => {
     if (result && result.vm && (result.vm instanceof Array)) {
       const allVmsIds = [];
@@ -131,6 +133,7 @@ function mapOvirtStatusToLibvirtState(ovirtStatus) {
 }
 
 function doRefreshTemplates(dispatch) { // TODO: consider paging; there might be thousands of templates
+  logDebug(`doRefreshTemplates() called`);
   ovirtApiGet('templates').done(result => {
     if (result && result.template && (result.template instanceof Array)) {
       const allTemplateIds = [];

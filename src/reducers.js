@@ -85,6 +85,7 @@ function vmsReducer (state, action) {
     { // If an action failed on a VM running on this host, the error will be recorded on two places - it's as expected.
       // If the VM is unknown for this host, the user needs to be still informed about the result
       // So far, the VM is identified by "name" only
+      // See the templatesReducer() as well.
       const vmId =  Object.getOwnPropertyNames(state).filter(vmId => state[vmId].name === action.payload.name);
       if (!vmId) {
         return state;
@@ -120,6 +121,29 @@ function templatesReducer (state, action) {
       const toBeRemoved = Object.getOwnPropertyNames(newState).filter(id => (allTemplateIds.indexOf(id) < 0))
       toBeRemoved.forEach(id => delete newState[id]);
       return newState;
+    }
+    case 'VM_ACTION_FAILED': // this reducer seconds the implementation in cockpit:machines and the vmsReducer()
+    {
+      logDebug(`templateReducer() VM_ACTION_FAILED payload: ${JSON.stringify(action.payload)}`);
+      if (action.payload.detailForNonexisting && action.payload.detailForNonexisting.templateName) {
+        const templateId = Object.getOwnPropertyNames(state).filter(templateId => state[templateId].name === action.payload.detailForNonexisting.templateName);
+        /*
+         const newState = Object.assign({}, state);
+         newState[templateId] = newState[templateId] || {};
+         Object.assign(newState[templateId],
+         { lastMessage: action.payload.message, lastMessageDetail: action.payload.detail });
+         return newState;
+         }
+         return state;
+         */
+        const updatedTemplate = Object.assign({}, state[templateId],
+          {lastMessage: action.payload.message, lastMessageDetail: action.payload.detail});
+        const updatedPartOfState = {};
+        updatedPartOfState[templateId] = updatedTemplate;
+        const newState = Object.assign({}, state, updatedPartOfState);
+        logDebug(`templateReducer() VM_ACTION_FAILED: ${JSON.stringify(newState)}`);
+        return newState;
+      }
     }
     default:
       return state;
