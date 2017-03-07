@@ -19,6 +19,7 @@ export function pollOvirt({dispatch}) {
       doRefreshHosts(dispatch);
       doRefreshVms(dispatch);
       doRefreshTemplates(dispatch);
+      doRefreshClusters(dispatch);
     }
   }).lastCall; // update the timestamp
 }
