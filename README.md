@@ -20,7 +20,8 @@ With this external provider, the `machines` plugin in Cockpit can redirect actio
  The result can be found under `dist` directory.
  
 # Installation
-Please make sure the Cockpit is installed **including support for external providers [1]**.
+Please make sure the **Cockpit** is installed **in version 133 or higher** (support for external providers [1] is required).
+    - `yum install cockpit cockpit-machines`
 
 - as `root` user on the host running the oVirt engine:
     - `engine-config -s CORSSupport=true` # To turn on the CORS support for the REST API     
