@@ -44,3 +44,7 @@
 .ovirt-provider-migrateto-combo {
     max-width: 25em;
 }
+
+.ovirt-provider-cluster-vms-actions {
+    min-width: 9em;
+}

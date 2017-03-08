@@ -160,7 +160,9 @@ export function lazyCreateClusterView() {
     return (<div className='container-fluid'>
       <Listing title={_("Cluster Virtual Machines")} columnTitles={[
         _("Name"), _("Description"), _("Cluster"), _("Template"), _("Memory"), _("vCPUs"), _("OS"),
-        _("HA"), _("Stateless"), _("Origin"), _("Host"), _("Action"), _("State")]}>
+        _("HA"), _("Stateless"), _("Origin"), _("Host"),
+        (<div className='ovirt-provider-cluster-vms-actions'>{_("Action")}</div>),
+        _("State")]}>
         {Object.getOwnPropertyNames(vms).map(vmId => {
           return (
             <Vm vm={vms[vmId]}
