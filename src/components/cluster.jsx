@@ -1,8 +1,7 @@
 import { getReact } from '../react.js';
-import { logDebug, logError, toGigaBytes, valueOrDefault, isSameHostAddress, getHostAddress } from '../helpers.js';
+import { logDebug, logError } from '../helpers.js';
 import { getCurrentHost } from '../selectors';
-import CONFIG from '../config';
-import { switchToplevelVisibility, startVm, createVm } from '../actions';
+import { switchToplevelVisibility, createVm } from '../actions';
 
 import ClusterVmsComponents from './clusterVms.jsx';
 import OVIRT_PROVIDER from '../provider';
@@ -21,8 +20,11 @@ export function lazyCreateClusterView() {
     return ;
   }
 
-  const { Listing, ListingRow, StateIcon, DropdownButtons } = OVIRT_PROVIDER.parentReactComponents;
-  const { ClusterVms } = ClusterVmsComponents;
+  const { Listing, ListingRow } = OVIRT_PROVIDER.parentReactComponents;
+  const { ClusterVms, VmLastMessage, VmDescription, VmMemory, VmCpu, VmOS, VmHA, VmStateless  } = ClusterVmsComponents;
+
+  const NoTemplate = () => (<div>TODO: Data retrieved, but no Template found in oVirt!</div>);
+  const NoTemplateUnitialized = () => (<div>Please wait till list of templates is loaded from the server.</div>);
 
   class CreateVmFromTemplate extends React.Component {
     constructor (props) {

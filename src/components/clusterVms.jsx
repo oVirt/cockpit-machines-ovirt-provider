@@ -1,4 +1,9 @@
 import { getReact } from '../react.js';
+import { logDebug, logError, toGigaBytes, valueOrDefault, isSameHostAddress, getHostAddress } from '../helpers.js';
+import { getCurrentHost } from '../selectors';
+import CONFIG from '../config';
+import { switchToplevelVisibility, startVm, createVm } from '../actions';
+
 import OVIRT_PROVIDER from '../provider';
 
 const _ = (m) => m; // TODO: add translation
@@ -8,7 +13,7 @@ const exportedComponents = {}; // to be filled by lazy created and exported comp
 /**
  * Build React components once the React context is available.
  */
-export function lazyCreateClusterView() {
+export function lazyCreateClusterVms() {
   const React = getReact();
   if (!React) {
     logError(`lazyCreateClusterView(): React not registered!`);
@@ -18,9 +23,7 @@ export function lazyCreateClusterView() {
   const { Listing, ListingRow, StateIcon, DropdownButtons } = OVIRT_PROVIDER.parentReactComponents;
 
   const NoVm = () => (<div>TODO: Data retrieved, but no VM found in oVirt!</div>);
-  const NoTemplate = () => (<div>TODO: Data retrieved, but no Template found in oVirt!</div>);
   const NoVmUnitialized = () => (<div>Please wait till VMs list is loaded from the server.</div>);
-  const NoTemplateUnitialized = () => (<div>Please wait till list of templates is loaded from the server.</div>);
 
   const VmHA = ({ highAvailability }) => (<div>{highAvailability ? (_("yes")) : (_("no"))}</div>);
   const VmMemory = ({ mem }) => (<div>{toGigaBytes(mem, 'B')} GB</div>);
@@ -131,7 +134,7 @@ export function lazyCreateClusterView() {
     />);
   };
 
-  exportedComponents.ClusterVms = ({ vms, hosts, templates, clusters, dispatch, config }) => {
+  const ClusterVms = ({ vms, hosts, templates, clusters, dispatch, config }) => {
     if (!vms) { // before cluster vms are loaded ; TODO: better handle state from the user perspective
       return (<NoVmUnitialized />);
     }
@@ -159,6 +162,15 @@ export function lazyCreateClusterView() {
       </Listing>
     </div>);
   };
+
+  exportedComponents.ClusterVms = ClusterVms;
+  exportedComponents.VmLastMessage = VmLastMessage;
+  exportedComponents.VmDescription = VmDescription;
+  exportedComponents.VmMemory = VmMemory;
+  exportedComponents.VmCpu = VmCpu;
+  exportedComponents.VmOS = VmOS;
+  exportedComponents.VmHA = VmHA;
+  exportedComponents.VmStateless = VmStateless;
 }
 
 export default exportedComponents;
