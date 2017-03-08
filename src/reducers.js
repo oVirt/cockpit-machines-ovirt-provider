@@ -1,5 +1,8 @@
 import { logDebug, logError } from './helpers';
 
+// TODO: consider immutableJS
+// TODO: reducers share common code - generalize
+
 function hostsReducer (state, action) {
   state = state || {}; // object of 'hostId: host'
 

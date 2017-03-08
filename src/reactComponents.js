@@ -6,11 +6,8 @@ import { lazyCreateVmDisksComponents } from './components/vmDisksSubtab.jsx';
 
 export function lazyCreateReactComponents () {
   lazyCreateOVirtTab();
-
   lazyCreateVdsmView();
   lazyCreateClusterView();
-
   lazyCreateVmDisksComponents();
-
   lazyCreateOVirtView();
 }

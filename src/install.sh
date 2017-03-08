@@ -64,7 +64,7 @@ function generateProviderConfig() {
   # PRODUCTION VERSION
   echo "{ \
       \"debug\": false, \
-      \"ovirt_polling_interval\": 120000, \
+      \"ovirt_polling_interval\": 60000, \
       \"cockpitPort\": 9090, \
       \"OVIRT_BASE_URL\": \"$ENGINE_URL\" \
     }" > $CONFIG_FILE || exit ${EXIT_NO_ACCESS_MACHINES_OVIRT_CONFIG}
