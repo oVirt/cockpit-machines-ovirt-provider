@@ -107,6 +107,10 @@ export function lazyCreateOVirtTab () {
 
       const clusterVm = providerState.vms[vm.id]; // 'vm' is from Libvirt, 'clusterVm' is from oVirt
 
+      if (!clusterVm) {
+        return (<div>{_("This virtual machine is not managed by oVirt")}</div>);
+      }
+
       return (
         <table className='machines-width-max'>
           <tr className='machines-listing-ct-body-detail'>
