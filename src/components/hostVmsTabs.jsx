@@ -1,13 +1,14 @@
 import { getReact } from '../react.js';
 import { logDebug, logError, isSameHostAddress } from '../helpers.js';
 import { migrateVm } from '../actions';
+import CommonComponents from './commonComponents.jsx';
 
 const _ = (m) => m; // TODO: add translation
 
 const exportedComponents = {}; // to be filled by lazy created and exported components
 
 /**
- * Build React components once the React context is available.
+ * Build React components not before the React context is available.
  */
 export function lazyCreateOVirtTab () {
   const React = getReact();
@@ -16,15 +17,7 @@ export function lazyCreateOVirtTab () {
     return ;
   }
 
-  const ConfirmButtons = ({ confirmText, dismissText, onYes, onNo }) => { // not exported
-    return (
-      <span>
-        <button className='btn btn-danger btn-xs' type='button' onClick={onYes}>{confirmText}</button>
-        &nbsp;
-        <button className='btn btn-primary btn-xs' type='button' onClick={onNo}>{dismissText}</button>
-      </span>
-    );
-  };
+  const { ConfirmButtons } = CommonComponents;
 
   class MigrateTo extends React.Component { // not exported
     constructor (props) {
