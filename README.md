@@ -24,7 +24,7 @@ Please make sure the Cockpit is installed **including support for external provi
 
 - as `root` user on the host running the oVirt engine:
     - `engine-config -s CORSSupport=true` # To turn on the CORS support for the REST API     
-
+    - `engine-config -s CORSAllowDefaultOrigins=true`  # To allow CORS for all configured hosts
 
 - `cd [COCKPIT_INSTALL_DIR]/machines && mkdir -p ./provider`
 - `cp [PROVIDER_SRC]/dist/* ./provider/`
