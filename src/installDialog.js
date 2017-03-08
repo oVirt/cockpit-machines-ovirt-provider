@@ -26,6 +26,7 @@ export function showPluginInstallationDialog () {
   });
   $("#ovirt-provider-install-dialog-install-button").on("click", function() {
     var engineUrl = $("#ovirt-provider-install-dialog-engine-url").val()
+    console.info(`About to call: '${INSTALL_SCRIPT} ${engineUrl}'`);
     cockpit.spawn([INSTALL_SCRIPT, engineUrl], { "superuser": "try" })
       .done(function () {
         // $("#ovirt-provider-install-dialog").modal("hide");
