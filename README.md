@@ -21,6 +21,7 @@ With this external provider, the `machines` plugin in Cockpit can redirect actio
  
 # Installation
 Please make sure the **Cockpit** is installed **in version 133 or higher** (support for external providers [1] is required).
+    
     - `yum install cockpit cockpit-machines`
 
 - as `root` user on the host running the oVirt engine:
