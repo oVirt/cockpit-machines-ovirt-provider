@@ -1,8 +1,7 @@
 import { getReact } from '../react.js';
-import { logDebug, logError, toGigaBytes, valueOrDefault, isSameHostAddress, getHostAddress } from '../helpers.js';
-import { getCurrentHost } from '../selectors';
+import { logError, toGigaBytes, valueOrDefault, isSameHostAddress, getHostAddress } from '../helpers.js';
 import CONFIG from '../config';
-import { switchToplevelVisibility, startVm, createVm } from '../actions';
+import { switchToplevelVisibility, startVm } from '../actions';
 
 import OVIRT_PROVIDER from '../provider';
 
@@ -16,7 +15,7 @@ const exportedComponents = {}; // to be filled by lazy created and exported comp
 export function lazyCreateClusterVms() {
   const React = getReact();
   if (!React) {
-    logError(`lazyCreateClusterView(): React not registered!`);
+    logError(`lazyCreateClusterVms(): React not registered!`);
     return;
   }
 
