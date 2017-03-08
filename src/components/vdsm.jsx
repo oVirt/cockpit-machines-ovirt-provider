@@ -9,7 +9,7 @@ const cockpit = window.cockpit;
 const exportedComponents = {}; // to be filled by lazy created and exported components
 
 /**
- * Build React components once the React context is available.
+ * Build React components not before the React context is available.
  */
 export function lazyCreateVdsmView() {
   const React = getReact();
@@ -18,6 +18,9 @@ export function lazyCreateVdsmView() {
     return;
   }
 
+  /**
+   * Editor for the vdsm.conf file.
+   */
   class VdsmConf extends React.Component {
     constructor (props) {
       super(props)
