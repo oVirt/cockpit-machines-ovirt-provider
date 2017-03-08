@@ -116,7 +116,7 @@ function getLogoutConfirmationFooterHtml() {
 
 function getLogoutRequiredHtml() {
   return '<div class="alert alert-warning">' +
-    '<span class="pficon pficon-error-circle-o"></span>' +
+    '<span class="pficon pficon-warning-triangle-o"></span>' +
     '<strong>' + _("Installation finished successfuly.") + '</strong>' + _(" Please <b>re-login</b> to take effect.")
   '</div>';
 }
