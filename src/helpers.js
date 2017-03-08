@@ -92,35 +92,18 @@ export function isSameHostAddress(hostAddress) { // TODO: check for all host add
 
 /**
  * Ensure, the function 'call()' is not executed more then once per timeperiod.
- *
- * @param call
- * @param delay
- * @param lastCall
- * @param lock(boolean toBeLocked)
- * @returns {{lastCall: *, result: *}}
  */
-export function callOncePerTimeperiod({call, delay, lastCall, lock}) {
+export function callOncePerTimeperiod({call, delay, lastCall}) {
   const now = Date.now();
   let result;
 
   if (lastCall + delay <= now) {
-    if (lock(true)) { // acquire or skip
-      try {
-        result = call();
-      } finally {
-        lock(false); // release lock
-      }
-    } else {
-      logDebug('callOncePerTimeperiod() skipped, lock is busy');
-    }
+    result = call(); // can be Promise.all
   } else {
     logDebug(`Skipping callOncePerTimeperiod(), not a window: lastcall=${lastCall}, delay=${delay}, now=${now}`);
   }
 
-  return {
-    lastCall: Date.now(), // start counting after the call is finished
-    result
-  };
+  return result;
 }
 
 /**

@@ -9,19 +9,24 @@ let lastOvirtPoll = -1; // timestamp
  * @param dispatch
  */
 export function pollOvirt({dispatch}) {
-  lastOvirtPoll = callOncePerTimeperiod({
+  callOncePerTimeperiod({
     lastCall: lastOvirtPoll,
     delay: CONFIG.ovirt_polling_interval,
-    lock: pollOvirtLock,
     call: () => {
       logDebug('Execution of oVirt polling');
-      // TODO: use Promise.all().then()
-      doRefreshHosts(dispatch);
-      doRefreshVms(dispatch);
-      doRefreshTemplates(dispatch);
-      doRefreshClusters(dispatch);
+      lastOvirtPoll = Infinity; // avoid parallel execution
+      const promises = [];
+      promises.push( doRefreshHosts(dispatch) );
+      promises.push( doRefreshVms(dispatch) );
+      promises.push( doRefreshTemplates(dispatch) );
+      promises.push( doRefreshClusters(dispatch) );
+
+      return Promise.all(promises).then( () => { // update the timestamp
+        lastOvirtPoll = Date.now();
+        logDebug(`pollOvirt(): setting lastOvirtPoll to: ${lastOvirtPoll}`);
+      });
     }
-  }).lastCall; // update the timestamp
+  });
 }
 
 /**
@@ -33,22 +38,9 @@ export function forceNextOvirtPoll() {
   lastOvirtPoll = -1;
 }
 
-let pollOvirtLocked = false;
-function pollOvirtLock(toBeLocked) {
-  if (toBeLocked) {
-    if (pollOvirtLocked) {
-      return false;
-    }
-    pollOvirtLocked = true;
-  } else {
-    pollOvirtLocked = false;
-  }
-  return true;
-}
-
 function doRefreshHosts(dispatch) {
   logDebug(`doRefreshHosts() called`);
-  ovirtApiGet('hosts').done(result => {
+  return ovirtApiGet('hosts').done(result => {
     if (result && result.host && (result.host instanceof Array)) {
       const allHostIds = [];
       result.host.forEach( host => {
@@ -83,7 +75,7 @@ function doRefreshHosts(dispatch) {
 
 function doRefreshVms(dispatch) { // TODO: consider paging; there might be thousands of vms
   logDebug(`doRefreshVms() called`);
-  ovirtApiGet('vms').done(result => {
+  return ovirtApiGet('vms').done(result => {
     if (result && result.vm && (result.vm instanceof Array)) {
       const allVmsIds = [];
       result.vm.forEach( vm => {
@@ -136,7 +128,7 @@ function mapOvirtStatusToLibvirtState(ovirtStatus) {
 
 function doRefreshTemplates(dispatch) { // TODO: consider paging; there might be thousands of templates
   logDebug(`doRefreshTemplates() called`);
-  ovirtApiGet('templates').done(result => {
+  return ovirtApiGet('templates').done(result => {
     if (result && result.template && (result.template instanceof Array)) {
       const allTemplateIds = [];
       result.template.forEach( template => {
@@ -190,7 +182,7 @@ function doRefreshTemplates(dispatch) { // TODO: consider paging; there might be
 
 function doRefreshClusters(dispatch) {
   logDebug(`doRefreshClusters() called`);
-  ovirtApiGet('clusters').done(result => {
+  return ovirtApiGet('clusters').done(result => {
     if (result && result.cluster && (result.cluster instanceof Array)) {
       const allClusterIds  = [];
       result.cluster.forEach( cluster => {
