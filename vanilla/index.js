@@ -38,6 +38,15 @@
  *   - refresh/login to cockpit, go to the 'Virtual Machines' package
  */
 
+/**
+ * Will be created from init().
+ * In real and more complex provider, consider wrapping into objects as a namespace.
+ * If React is required, consider use of ES6/Webpack.
+ *
+ * For simple UI extensions, JQuery can be used as well but please do not update React-rendered DOM via JQuery.
+ */
+var TestSubtabReactComponent = null;
+
 var PROVIDER = {};
 PROVIDER = {
   name: 'TEST_PROVIDER',
@@ -83,6 +92,8 @@ PROVIDER = {
     PROVIDER.nextProvider = providerContext.defaultProvider;
     PROVIDER.vmStateMap = {}; // reuse map for Libvirt (defaultProvider.vmStateMap)
 
+    _lazyCreateReactComponents(providerContext.React);
+
     return true; // or Promise
   },
 
@@ -123,7 +134,8 @@ PROVIDER = {
       // Update Redux store via dispatching actions.
       var dfd = window.cockpit.defer();
 
-      var CONNECTION_NAME = 'testConnection';
+      var CONNECTION_NAME = 'testConnection'; // Use whatever suits your needs. In Libvirt, [system | session] is used.
+
       dispatch(PROVIDER.actions.updateOrAddVm({
         connectionName: CONNECTION_NAME,
         name: 'vm1',
@@ -150,11 +162,173 @@ PROVIDER = {
         autostart: 'disable'
       }));
 
+      // Schedule next GET_ALL_VMS() call if polling is needed, i.e. via dispatch(delayPolling(getAllVms()))
+
       dfd.resolve();
       return dfd.promise;
     };
   },
 
+  /**
+   * Call `shut down` on the VM.
+   */
+  SHUTDOWN_VM: (payload) => {
+    console.log('PROVIDER.SHUTDOWN_VM called with params: ' + JSON.stringify(payload));
+    const vmName = payload.name;
+    const connectionName = payload.connectionName;
+    return function (dispatch) {
+      /*
+       * Do external call, return Promise.
+       *
+       * Dummy implementation to see if it's working follows.
+       *
+       * In real provider, the SHUTDOWN_VM() initiates the operation in "external" system and
+       * then the redux state is updated via polling/events/scheduled focused refresh.
+       */
+
+      var dfd = window.cockpit.defer();
+
+      // mock the external system right here
+      dispatch(PROVIDER.actions.updateOrAddVm({
+        connectionName: connectionName,
+        name: vmName,
+        state: 'shut off',
+      }));
+
+      dfd.resolve();
+      return dfd.promise;
+    };
+  },
+
+  /**
+   * Example for VM action error handling.
+   *
+   * The error message will be displayed along the VM.
+   */
+  START_VM: (payload) => {
+    console.log('PROVIDER.REBOOT_VM called with params: ' + JSON.stringify(payload));
+    return function (dispatch) {
+      console.log('START_VM intentionally implemented as failing in this PROVIDER.');
+      const vmName = payload.name;
+      const connectionName = payload.connectionName;
+
+      dispatch(vmActionFailed({
+        name: vmName,
+        connectionName: connectionName,
+        message: 'VM failed to start',
+        detail: 'Detailed description of the failure.',
+      }));
+    };
+  },
+
+  /**
+   * Force shut down on the VM.
+   */
+  FORCEOFF_VM: function (payload) {
+    console.log('PROVIDER.FORCEOFF_VM called with params: ' + JSON.stringify(payload));
+    return function (dispatch) {console.log('FORCEOFF_VM not implemented for this PROVIDER');};
+  },
+
+  REBOOT_VM: function (payload) {
+    console.log('PROVIDER.REBOOT_VM called with params: ' + JSON.stringify(payload));
+    return function (dispatch) {console.log('REBOOT_VM not implemented for this PROVIDER');};
+  },
+
+  FORCEREBOOT_VM: function (payload) {
+    console.log('PROVIDER.FORCEREBOOT_VM called with params: ' + JSON.stringify(payload));
+    return function (dispatch) {console.log('FORCEREBOOT_VM not implemented for this PROVIDER');};
+  },
+
+  CONSOLE_VM (payload) {
+    console.log('PROVIDER.CONSOLE_VM called with params: ' + JSON.stringify(payload));
+    return function (dispatch) {console.log('CONSOLE_VM not implemented for this PROVIDER');};
+  },
+
+  /*
+   * Feel free to add additional VM action handlers not even recognized by the Libvirt
+   * as far as your provider's UI extension dispatches the correct actions via `PROVIDER.actions.virtMiddleware()`
+   *
+   * Example: MIGRATE_VM  or CREATE_VM in cockpit-machines-ovirt-provider
+   */
+
+  reducer: undefined, // optional reference to reducer function extending the application Redux state tree, see cockpit-machines-ovirt-provider for more detailed example
+
+  /**
+   * Optional array of
+   * {
+   *  name: 'My Tab Title',
+   *  componentFactory: () => yourReactComponentRenderingSubtabBody
+   *  }
+   *
+   * Please note, the React components have to be created lazily via `providerContext.React` passed to the init() function.
+   */
+  vmTabRenderers: [
+    {
+      name: 'Test Subtab',
+      componentFactory: function () {return TestSubtabReactComponent;}
+    },
+  ],
+
+  vmDisksActionsFactory: undefined,
+  vmDisksColumns: undefined,
+  /* Not needed now, keeping as an example
+   vmDisksActionsFactory: ({vm}) => VmDisksSubtab.DummyActionsFactory({vm}), // listing-wide actions, see cockpit-components-listing.jsx
+   vmDisksColumns: [
+   {
+   title: _("oVirt"),
+   index: 3,
+   valueProvider: ({ vm, diskTarget }) => `vm: ${vm.name}, diskTarget: ${diskTarget}}`,
+   },
+   {
+   title: _("Foo"),
+   index: 5,
+   valueProvider: ({ vm, diskTarget }) => VmDisksSubtab.DummyFactory({ vm, diskTarget }),
+   },
+   ],
+   */
+
+
+  /*
+   * Please note, there are additional methods/properties supported by the cockpit:machines API but out of scope of this simple test implementation
+   * For full reference see either cockpit:machines sources or the cockpit-machines-ovirt-provider.
+   */
 };
 
 window.EXTERNAL_PROVIDER = PROVIDER;
+
+// ---------------------------------------------------------------------------------------------------------------------
+/**
+ * Example of Redux action creator.
+ *
+ * Used to dispatch error message, handled in cockpit:machines reducers.es6 to update the Redux state.
+ */
+function vmActionFailed({ name, connectionName, message, detail }) {
+  return {
+    type: 'VM_ACTION_FAILED',
+    payload: {
+      name,
+      connectionName,
+      message,
+      detail,
+    }
+  };
+}
+
+/**
+ * Example of lazy React components creation.
+ *
+ * Always reuse React library provided from the calling cockpit:machines context.
+ */
+function _lazyCreateReactComponents(React) {
+  TestSubtabReactComponent = React.createClass(
+    {
+      propTypes: {
+        vm: React.PropTypes.object.isRequired,
+      },
+      render: function () {
+        var vm = this.props.vm;
+        return React.createElement('div', {id: 'test-subtab-body-'+ vm.name}, 'Content of subtab');
+      }
+    }
+  );
+}
