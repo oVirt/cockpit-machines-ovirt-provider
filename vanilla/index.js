@@ -269,27 +269,11 @@ PROVIDER = {
     },
   ],
 
-  vmDisksActionsFactory: undefined,
-  vmDisksColumns: undefined,
-  /* Not needed now, keeping as an example
-   vmDisksActionsFactory: ({vm}) => VmDisksSubtab.DummyActionsFactory({vm}), // listing-wide actions, see cockpit-components-listing.jsx
-   vmDisksColumns: [
-   {
-   title: _("oVirt"),
-   index: 3,
-   valueProvider: ({ vm, diskTarget }) => `vm: ${vm.name}, diskTarget: ${diskTarget}}`,
-   },
-   {
-   title: _("Foo"),
-   index: 5,
-   valueProvider: ({ vm, diskTarget }) => VmDisksSubtab.DummyFactory({ vm, diskTarget }),
-   },
-   ],
-   */
-
+  vmDisksActionsFactory: undefined, // optional
+  vmDisksColumns: undefined, // optional
 
   /*
-   * Please note, there are additional methods/properties supported by the cockpit:machines API but out of scope of this simple test implementation
+   * Please note, there are additional methods/properties supported by the cockpit:machines API but out of the scope of this simple test implementation
    * For full reference see either cockpit:machines sources or the cockpit-machines-ovirt-provider.
    */
 };
