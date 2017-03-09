@@ -37,12 +37,17 @@ export function lazyCreateClusterTemplates() {
 
       this.onDoCreateVm = this.onDoCreateVm.bind(this);
       this.onCreateVm = this.onCreateVm.bind(this);
+      this.onCancel = this.onCancel.bind(this);
 
       this.onVmNameChanged = this.onVmNameChanged.bind(this);
     }
 
     onCreateVm () {
       this.setState({ enterDetails: true, vmName: '' });
+    }
+
+    onCancel () {
+      this.setState({ enterDetails: false, vmName: '' });
     }
 
     onVmNameChanged (e) {
@@ -64,6 +69,7 @@ export function lazyCreateClusterTemplates() {
         return (
           <div>
             <input className='form-control' type='text' placeholder={_("Enter New VM name")} value={this.state.vmName} onChange={this.onVmNameChanged} />
+            <button onClick={this.onCancel} className='btn btn-default btn-danger'>{_("Cancel")}</button>
             <button onClick={this.onDoCreateVm} className='btn btn-default btn-danger'>{_("Create")}</button>
           </div>
         );
