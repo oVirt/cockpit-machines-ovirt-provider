@@ -1,6 +1,6 @@
 
 export const INSTALL_SCRIPT = '/usr/share/cockpit/machines/provider/install.sh'
-// export const INSTALL_SCRIPT = '/root/.local/share/cockpit/machines/provider/install.sh' // TODO: change it!
+// export const INSTALL_SCRIPT = '/root/.local/share/cockpit/machines/provider/install.sh'
 
 export const CONFIG_FILE_URL = 'provider/machines-ovirt.config'
 export const CSS_FILE_URL = 'provider/machines-ovirt.css'

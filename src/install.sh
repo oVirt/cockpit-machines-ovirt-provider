@@ -18,7 +18,8 @@
 #         installation dialog shows up to handle the install.sh script execution from UI
 #
 
-COCKPIT_DIR=/usr/share/cockpit  # TODO: get it dynamically via 'rpm -q cockpit-shell --fileprovide' or 'dpkg -L'
+ENGINE_URL=$1
+COCKPIT_DIR=${2:-/usr/share/cockpit}  # TODO: get it dynamically via 'rpm -q cockpit-shell --fileprovide' or 'dpkg -L'
 
 EXIT_PARAMS=1 # wrong command parameters
 EXIT_CSP_IN_SHELL_OVERRIDE=2 # cockpit/shell/override.json exists and already contains conflicting 'content-security-policy' section. Manual merge is required.
@@ -28,12 +29,13 @@ EXIT_NO_ACCESS_SHELL_OVERRIDE=5 # can't write to cockpit/shell/override.json
 EXIT_SHELL_OVERRIDE_MERGE_FAILED=6 # cockpit/shell/override.json exists and the 'content-security-policy' is not present. Update of the file failed, try as root.
 
 function usage() {
-  echo Usage: $0 '[ENGINE_URL]'
+  echo Usage: $0 '[ENGINE_URL] [[COCKPIT_INSTLLATION_DIR]]'
   echo Example: $0 https://engine.mydomain.com/ovirt-engine/
+  echo Example: $0 https://engine.mydomain.com/ovirt-engine/ /usr/share/cockpit
 }
 
 function checkParams() {
-  if [ x$ENGINE_URL = x ] ; then
+  if [ x${ENGINE_URL} = x ] ; then
     usage
     exit ${EXIT_PARAMS}
   else
@@ -54,16 +56,6 @@ function unableToMergeShellOverride() {
 function generateProviderConfig() {
   CONFIG_FILE=${COCKPIT_DIR}/machines/provider/machines-ovirt.config
 
-  # DEBUG VERSION:
-#  echo === USING DEBUG CONFIG FILE ===
-#  echo "{ \
-#      \"debug\": true, \
-#      \"ovirt_polling_interval\": 5000, \
-#      \"cockpitPort\": 9090, \
-#      \"OVIRT_BASE_URL\": \"$ENGINE_URL\" \
-#    }" > $CONFIG_FILE || exit ${EXIT_NO_ACCESS_MACHINES_OVIRT_CONFIG}
-
-  # PRODUCTION VERSION
   echo "{ \
       \"debug\": false, \
       \"ovirt_polling_interval\": 60000, \
@@ -71,7 +63,7 @@ function generateProviderConfig() {
       \"OVIRT_BASE_URL\": \"$ENGINE_URL\" \
     }" > $CONFIG_FILE || exit ${EXIT_NO_ACCESS_MACHINES_OVIRT_CONFIG}
 
-  echo OK: $CONFIG_FILE generated
+  echo OK: ${CONFIG_FILE} generated
 }
 
 function updateShellManifest() {
@@ -103,7 +95,6 @@ function updateMachinesManifest() {
   echo OK: ${MACHINES_OVERRIDE} generated
 }
 
-ENGINE_URL=$1
 checkParams
 
 ENGINE_URL=$(echo "${ENGINE_URL}"|sed 's/\/$//g')
@@ -112,4 +103,4 @@ ENGINE_URL=${ENGINE_URL}"/"
 updateMachinesManifest
 generateProviderConfig
 
-updateShellManifest
+# updateShellManifest  # seems to be not needed
