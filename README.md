@@ -64,7 +64,7 @@ Active operations `(start, shutdown, restart)` are redirected to oVirt REST API 
 # Links
 
 - [1] Cockpit-machines external provider support
-    - https://github.com/mareklibra/cockpit/tree/machines.providers
+    - https://github.com/cockpit-project/cockpit/pull/5759
     - and multiple follow-up patches
 - [2] oVirt CORS support
     - https://gerrit.ovirt.org/#/c/68529/
