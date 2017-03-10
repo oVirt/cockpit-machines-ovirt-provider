@@ -21,7 +21,7 @@
  * The simplest external provider for cockpit:machines.
  *
  * Used
- *   - for integration tests
+ *   - for Cockpit integration tests
  *   - as a Hello World example for 3rd party development
  *
  * Written in VanillaJS.
@@ -141,44 +141,39 @@ function registerProvider() {
       /* To redirect the call to Libvirt:
        *    return PROVIDER.nextProvider.GET_ALL_VMS(payload);
        */
-
       return function (dispatch) {
-        // Do external call to get data, return Promise.
-        // Update Redux store via dispatching actions.
-        var dfd = window.cockpit.defer();
+        // Example of using (Cockpit) Promise for async actions
+        return window.cockpit.spawn(['echo', 'Hello']).then(function (data) {
+          var CONNECTION_NAME = 'testConnection'; // Use whatever suits your needs. In Libvirt, [system | session] is used.
 
-        var CONNECTION_NAME = 'testConnection'; // Use whatever suits your needs. In Libvirt, [system | session] is used.
+          dispatch(PROVIDER.actions.updateOrAddVm({ // add
+            connectionName: CONNECTION_NAME,
+            name: 'vm1',
+            id: 'id-vm1',
+            osType: '',
+            currentMemory: '1048576', // 1 GB
+            vcpus: 1
+          }));
+          dispatch(PROVIDER.actions.updateOrAddVm({ // update
+            connectionName: CONNECTION_NAME,
+            name: 'vm1',
+            state: 'running',
+            autostart: 'enable'
+          }));
 
-        dispatch(PROVIDER.actions.updateOrAddVm({
-          connectionName: CONNECTION_NAME,
-          name: 'vm1',
-          id: 'id-vm1',
-          osType: '',
-          currentMemory: '1048576', // 1 GB
-          vcpus: 1
-        }));
-        dispatch(PROVIDER.actions.updateOrAddVm({
-          connectionName: CONNECTION_NAME,
-          name: 'vm1',
-          state: 'running',
-          autostart: 'enable'
-        }));
+          dispatch(PROVIDER.actions.updateOrAddVm({
+            connectionName: CONNECTION_NAME,
+            name: 'vm2',
+            id: 'id-vm2',
+            osType: '',
+            currentMemory: '2097152', // 2 GB
+            vcpus: 2,
+            state: 'shut off',
+            autostart: 'disable'
+          }));
 
-        dispatch(PROVIDER.actions.updateOrAddVm({
-          connectionName: CONNECTION_NAME,
-          name: 'vm2',
-          id: 'id-vm2',
-          osType: '',
-          currentMemory: '2097152', // 2 GB
-          vcpus: 2,
-          state: 'shut off',
-          autostart: 'disable'
-        }));
-
-        // Schedule next GET_ALL_VMS() call if polling is needed, i.e. via dispatch(delayPolling(getAllVms()))
-
-        dfd.resolve();
-        return dfd.promise;
+          // Schedule next GET_ALL_VMS() call if polling is needed, i.e. via dispatch(PROVIDER.actions.delayPolling(getAllVms()))
+        });
       };
     },
 
