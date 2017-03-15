@@ -1,10 +1,8 @@
-*Please note:* `this code is still under development`
-
 # oVirt External Prvider for Cockpit-machines
 With this external provider, the `machines` plugin in Cockpit can redirect actions to oVirt REST API instead of default Libvirt.
  
 # Cockpit-machines External Providers in general 
- Please refer to cockpit-machines [README.md](https://github.com/mareklibra/cockpit/blob/machines.providers/pkg/machines/README.md) for external plugin description and API which is implemented by this project.
+ Please refer to cockpit-machines [README.md](https://github.com/cockpit-project/cockpit/blob/master/pkg/machines/README.md) for external plugin description and API which is implemented by this project.
 
  The entry point for the provider API implementation is `src/provider.js`.
  It's fine to implement the API using `VanillaJS`, as far as the simple API contract is met.
@@ -13,7 +11,7 @@ With this external provider, the `machines` plugin in Cockpit can redirect actio
 
 # Build
  
- - git clone https://github.com/mareklibra/cockpit-machines-ovirt-provider.git && cd cockpit-machines-ovirt-provider 
+ - git clone https://github.com/oVirt/cockpit-machines-ovirt-provider.git && cd cockpit-machines-ovirt-provider 
  - npm i
  - make
  
