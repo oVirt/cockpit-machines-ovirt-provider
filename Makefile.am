@@ -25,6 +25,7 @@ EXTRA_DIST = \
 	README.md \
 	LICENSE \
 	src \
+  public \
 	config \
 	scripts \
 	package.json \
