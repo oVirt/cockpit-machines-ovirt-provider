@@ -23,7 +23,7 @@ With this external provider, the `machines` plugin in Cockpit can redirect actio
  - make [rpm]
 
  
- Or without `ovirt-engine-*` packages:
+ **Or without** `ovirt-engine-*` packages:
  
  - git clone https://github.com/oVirt/cockpit-machines-ovirt-provider.git && cd cockpit-machines-ovirt-provider
  - ./autogen.sh
@@ -33,22 +33,32 @@ With this external provider, the `machines` plugin in Cockpit can redirect actio
  The result can be found under `dist` directory.
  
 # Installation
-Please make sure the **Cockpit** is installed **in version 133 or higher** (support for external providers [1] is required).
-    
- - `yum install cockpit cockpit-machines`
+Please make sure
 
- - as `root` user on the host running the oVirt engine:
+ - the **oVirt** is installed (**engine and at least one host**)
+ - the **Cockpit** is installed **in version 133 or higher** on the oVirt host
+     - `yum install cockpit cockpit-machines`
+ 
+ - as `root` user on the machine running the oVirt engine:
      - `engine-config -s CORSSupport=true` # To turn on the CORS support for the REST API     
      - `engine-config -s CORSAllowDefaultOrigins=true`  # To allow CORS for all configured hosts
 
- - `cd [COCKPIT_INSTALL_DIR]/machines && mkdir -p ./provider`
- - `cp [PROVIDER_SRC]/dist/* ./provider/`
- - login into Cockpit as `root` user, enter the `machines` plugin, installation dialog pops-up. Please submit your URL of running oVirt engine 
-     - will lead to creation/update of following config files:
+ - as `root` user on the oVirt host machine:
+     - rpm -Uvh [path to cockpit-machines-ovirt-provider RPM]  # see section above 
+
+ - login into Cockpit as `root` user, enter the `machines` plugin, installation dialog pops-up. Please submit your URL of running **oVirt engine** 
+     - following config files will be updated:
          - cockpit/machines/override.json
          - cockpit/machines/provider/machines-ovirt.config
      - in case of failure, please follow instructions by the `install.sh`        
  - re-login into Cockpit
+ 
+ 
+ **For development**, it's enough to just copy `dist/` files under `[COCKPIT_INSTALL_DIR]/machines/provider` 
+  
+  - `cd [COCKPIT_INSTALL_DIR]/machines && mkdir -p ./provider`
+  - `cp [PROVIDER_SRC]/dist/* ./provider/`
+  - refresh the cockpit:machines page to take effect
 
 The `COCKPIT_INSTALL_DIR` usually refers to `/usr/share/cockpit`.
 
