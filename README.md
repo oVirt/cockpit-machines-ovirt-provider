@@ -9,9 +9,24 @@ With this external provider, the `machines` plugin in Cockpit can redirect actio
  
  For more complex scenarios `ES6, Babel, Webpack and React` can be leveraged as shown in this project. 
 
-# Build
+# Development Build
  
- - git clone https://github.com/oVirt/cockpit-machines-ovirt-provider.git && cd cockpit-machines-ovirt-provider 
+ **Suggested** with `yarn` and oVirt managed dependencies:
+ 
+ - Add oVirt `tested` yum repo (http://resources.ovirt.org/repos/ovirt/tested/master/rpm)
+     - so far manually, till [BZ 1427045](https://bugzilla.redhat.com/show_bug.cgi?id=1427045) is finished 
+ 
+ - git clone https://github.com/oVirt/cockpit-machines-ovirt-provider.git && cd cockpit-machines-ovirt-provider
+ - ./autogen.sh
+ - yum-builddep cockpit-machines-ovirt-provider.spec  # to install ovirt-engine-yarn and other dependencies of correct versions
+ - source /usr/share/ovirt-engine-nodejs-modules/setup-env.sh  # to create ./node_modules dir from yarn offline cache
+ - make [rpm]
+
+ 
+ Or without `ovirt-engine-*` packages:
+ 
+ - git clone https://github.com/oVirt/cockpit-machines-ovirt-provider.git && cd cockpit-machines-ovirt-provider
+ - ./autogen.sh
  - npm i
  - make
  
@@ -20,21 +35,20 @@ With this external provider, the `machines` plugin in Cockpit can redirect actio
 # Installation
 Please make sure the **Cockpit** is installed **in version 133 or higher** (support for external providers [1] is required).
     
-    - `yum install cockpit cockpit-machines`
+ - `yum install cockpit cockpit-machines`
 
-- as `root` user on the host running the oVirt engine:
-    - `engine-config -s CORSSupport=true` # To turn on the CORS support for the REST API     
-    - `engine-config -s CORSAllowDefaultOrigins=true`  # To allow CORS for all configured hosts
+ - as `root` user on the host running the oVirt engine:
+     - `engine-config -s CORSSupport=true` # To turn on the CORS support for the REST API     
+     - `engine-config -s CORSAllowDefaultOrigins=true`  # To allow CORS for all configured hosts
 
-- `cd [COCKPIT_INSTALL_DIR]/machines && mkdir -p ./provider`
-- `cp [PROVIDER_SRC]/dist/* ./provider/`
-- login into Cockpit as `root` user, enter the `machines` plugin, installation dialog pops-up. Please submit your URL of running oVirt engine 
-    - will lead to creation/update of following config files:
-        - cockpit/shell/override.json
-        - cockpit/machines/override.json
-        - cockpit/machines/provider/machines-ovirt.config
-    - in case of failure, please follow instructions by the `install.sh`        
-- re-login into Cockpit
+ - `cd [COCKPIT_INSTALL_DIR]/machines && mkdir -p ./provider`
+ - `cp [PROVIDER_SRC]/dist/* ./provider/`
+ - login into Cockpit as `root` user, enter the `machines` plugin, installation dialog pops-up. Please submit your URL of running oVirt engine 
+     - will lead to creation/update of following config files:
+         - cockpit/machines/override.json
+         - cockpit/machines/provider/machines-ovirt.config
+     - in case of failure, please follow instructions by the `install.sh`        
+ - re-login into Cockpit
 
 The `COCKPIT_INSTALL_DIR` usually refers to `/usr/share/cockpit`.
 
@@ -46,7 +60,9 @@ Cockpit does not need to be restarted to take effect.
 
 # RPM Installation
 
-**Will follow ...**
+RPM can be built as described above.
+
+TODO: Link to public yum repo **will follow ...**
 
 # Invocation
 If installed properly, the oVirt will be used as datasource after next reload of the `machines` plugin page in Cockpit (re-login to Cockpit).
