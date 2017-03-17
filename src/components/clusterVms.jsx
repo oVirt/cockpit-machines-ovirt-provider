@@ -147,7 +147,7 @@ export function lazyCreateClusterVms() {
         _("Name"), _("Description"), _("Cluster"), _("Template"), _("Memory"), _("vCPUs"), _("OS"),
         _("HA"), _("Stateless"), _("Origin"), _("Host"),
         (<div className='ovirt-provider-cluster-vms-actions'>{_("Action")}</div>),
-        _("State")]}>
+        (<div className='ovirt-provider-cluster-vms-state'>{_("State")}</div>)]}>
         {Object.getOwnPropertyNames(vms).map(vmId => {
           return (
             <Vm vm={vms[vmId]}

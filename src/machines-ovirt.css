@@ -48,3 +48,7 @@
 .ovirt-provider-cluster-vms-actions {
     min-width: 9em;
 }
+
+.ovirt-provider-cluster-vms-state {
+    min-width: 6em;
+}
