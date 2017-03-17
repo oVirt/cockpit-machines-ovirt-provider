@@ -22,18 +22,13 @@ import { registerReact } from './react.js';
 import { lazyCreateReactComponents } from './reactComponents';
 import { ovirtReducer }  from './reducers'
 import OVirtTabComponents from './components/hostVmsTabs.jsx';
-import VmDisksSubtab from './components/vmDisksSubtab.jsx';
+// import VmDisksSubtab from './components/vmDisksSubtab.jsx';
 import { appendClusterSwitch } from './components/topLevelViewSwitch.jsx';
+import { CONSOLE_TYPE_ID_MAP } from './config';
 
 import { pollOvirt, forceNextOvirtPoll } from './ovirt';
 
 const _ = (m) => m; // TODO: add translation
-
-const CONSOLE_TYPE_ID_MAP = { // TODO: replace by API call /vms/[ID]/graphicsconsoles for more flexibility, but it's hardcoded everywhere anyway ...
-  'spice': '7370696365',
-  'vnc': '766e63',
-  'rdp': 'rdp_not_yet_supported',
-};
 
 const QEMU_SYSTEM = 'system'; // conforms connection name defined in parent's cockpit:machines/config.es6
 
@@ -125,6 +120,7 @@ OVIRT_PROVIDER = {
    * Redirected to Libvirt provider.
    */
   GET_VM: (payload) => {
+    logDebug('OVIRT_PROVIDER.GET_VM() called');
     logDebug('GET_VM: redirecting to Libvirt provider');
     return OVIRT_PROVIDER.nextProvider.GET_VM(payload);
   },
@@ -237,7 +233,31 @@ OVIRT_PROVIDER = {
     );
   },
 
-  CONSOLE_VM (payload) {
+  // TODO: password is retrieved, but SSL remains
+  onConsoleAboutToShow: ({ vm, type }) => {
+    logDebug(`onConsoleAboutToShow(payload: {vmId: "${vm.vmId}", type: "${type}"}`);
+    const orig = vm.displays[type];
+    const consoleDetail = Object.assign({}, orig); // to be updated and returned as a result of promise
+
+    const vmId = vm.id;
+    const consoleId = CONSOLE_TYPE_ID_MAP[type];
+
+    return ovirtApiGet(
+      `vms/${vmId}/graphicsconsoles/${consoleId}`,
+      { Accept: 'application/x-virt-viewer' }
+    ).then(vvFile => {
+      const password = vvFile.match(/[^\r\n]+/g).filter(line => {
+        return line.trim().startsWith("password=");
+      });
+      if (password) {
+        logDebug(`onConsoleAboutToShow(): password found`);
+        consoleDetail.password = password;
+      }
+      return consoleDetail;
+    });
+  },
+
+  CONSOLE_VM (payload) { // download a .vv file
     const type = payload.consoleDetail.type; // spice, vnc, rdp
     const vmId = payload.id;
     logDebug(`CONSOLE_VM: requesting .vv file from oVirt for vmId: ${vmId}, type: ${type}`);
@@ -253,7 +273,8 @@ OVIRT_PROVIDER = {
     forceNextOvirtPoll();
     return (dispatch) => ovirtApiGet(
       `vms/${vmId}/graphicsconsoles/${consoleId}`,
-      { Accept: 'application/x-virt-viewer' }).then(vvFile => {
+      { Accept: 'application/x-virt-viewer' }
+    ).then(vvFile => {
         fileDownload({ data: vvFile,
           fileName: `${type}Console.vv`,
           mimeType: 'application/x-virt-viewer'});

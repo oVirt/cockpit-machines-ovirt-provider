@@ -1,6 +1,6 @@
 import { updateHost, removeUnlistedHosts, updateVm, removeUnlistedVms, updateTemplate, removeUnlistedTemplates, updateCluster, removeUnlistedClusters } from './actions';
 import { callOncePerTimeperiod, logDebug, logError, ovirtApiGet } from './helpers';
-import CONFIG from './config';
+import CONFIG, { CONSOLE_TYPE_ID_MAP } from './config';
 
 let lastOvirtPoll = -1; // timestamp
 /**
@@ -28,7 +28,17 @@ export function pollOvirt({dispatch}) {
     }
   });
 }
+/*
+export function updateVmForOvirt({ vmId, dispatch }) {
+  logDebug(`updateVmForOvirt() started for ${vmId}`);
+  const promises = [];
+  promises.push( updateVmForOvirtConsole(dispatch, vmId) );
 
+  return Promise.all(promises).then( () => { // update the timestamp
+    logDebug(`updateVmForOvirt() finished for ${vmId}`);
+  });
+}
+*/
 /**
  * Shortens the period for next oVirt polling, so it will be executed at next earliest opportunity.
  *
@@ -199,3 +209,36 @@ function doRefreshClusters(dispatch) {
     }
   });
 }
+/*
+TODO: vratit zpatky a v cockpit:machines <Vnc> komponente zavolat providera pro doplneni specifik
+function updateVmForOvirtConsole(dispatch, vmId) {
+  // TODO: fix vm identification (id, name, connection) - from Libvirt.GET_VM over call of this func
+  // TODO: debug for proper oVirt API result values
+  // TODO: chain calls for each console
+  logDebug(`updateVmForOvirtConsole('${vmId}') called`);
+  return ovirtApiGet(`vms/${vmId}/graphicsconsoles`).done(result => {
+    if (result && result.graphicsconsoles && (result.graphicsconsoles instanceof Array)) {
+      const displays = {};
+
+      const promises = result.graphicsconsoles.map(console => {
+        return ovirtApiGet(`vms/${vmId}/graphicsconsoles/${consoleId}`).done(consoleResult => {
+          displays[consoleResult.type] = {
+            type: consoleResult('type'),
+            port: consoleResult('port'),
+            tlsPort: consoleResult('tlsPort'),
+            address: consoleResult('listen'),
+            password: TODO
+          }
+        });
+      });
+
+      return Promise.all(promises).then( () => { // update the Libvirt VM detail for consoles
+        dispatch(updateOrAddVm({id, name, connectionName, displays}));
+      });
+    } else {
+      // TODO: handle vmId not found - external to oVirt
+      logError(`updateVmForOvirtConsole() failed, result: ${JSON.stringify(result)}`);
+    }
+  });
+}
+*/

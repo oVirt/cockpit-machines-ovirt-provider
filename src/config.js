@@ -7,6 +7,12 @@ export const CSS_FILE_URL = 'provider/machines-ovirt.css'
 
 export const VDSM_CONF_FILE = '/etc/vdsm/vdsm.conf';
 
+export const CONSOLE_TYPE_ID_MAP = { // TODO: replace by API call /vms/[ID]/graphicsconsoles for more flexibility, but it's hardcoded everywhere anyway ...
+  'spice': '7370696365',
+  'vnc': '766e63',
+  'rdp': 'rdp_not_yet_supported',
+};
+
 const CONFIG = { // will be dynamically replaced by content of CONFIG_FILE_URL within OVIRT_PROVIDER.init()
   /**
    * Set to false to turn off the debug logging
