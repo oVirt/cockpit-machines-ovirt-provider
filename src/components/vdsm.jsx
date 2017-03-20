@@ -119,7 +119,7 @@ export function lazyCreateVdsmView() {
     }
   }
 
-  const VdsmView = ({}) => {
+  const VdsmView = () => {
     return (<div>
       <VdsmConf />
     </div>);

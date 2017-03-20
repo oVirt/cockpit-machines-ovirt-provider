@@ -1,4 +1,4 @@
-import { getHostAddress, isSameHostAddress } from './helpers';
+import { getHostAddress } from './helpers';
 
 export function getCurrentHost (hosts) {
   const currentHostAddress = getHostAddress();
