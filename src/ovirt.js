@@ -1,6 +1,6 @@
 import { updateHost, removeUnlistedHosts, updateVm, removeUnlistedVms, updateTemplate, removeUnlistedTemplates, updateCluster, removeUnlistedClusters } from './actions';
 import { callOncePerTimeperiod, logDebug, logError, ovirtApiGet } from './helpers';
-import CONFIG, { CONSOLE_TYPE_ID_MAP } from './config';
+import CONFIG from './config';
 
 let lastOvirtPoll = -1; // timestamp
 /**

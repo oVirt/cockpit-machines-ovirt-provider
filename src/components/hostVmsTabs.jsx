@@ -11,6 +11,7 @@ const exportedComponents = {}; // to be filled by lazy created and exported comp
  * Build React components not before the React context is available.
  */
 export function lazyCreateOVirtTab () {
+  logDebug('lazyCreateOVirtTab()');
   const React = getReact();
   if (!React) {
     logError(`lazyCreateOVirtTab(): React not registered!`);

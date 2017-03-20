@@ -92,8 +92,9 @@ export function lazyCreateOVirtView() {
   const renderOVirtView = (store) => {
     $("body").append('<div id="app-cluster"></div>');
     const render = () => {
-      React.render(
-        React.createElement(OVirtView, {store}),
+      const r = getReact();
+      r.render(
+        r.createElement(OVirtView, {store}),
         document.getElementById('app-cluster')
       )
     };

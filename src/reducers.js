@@ -171,6 +171,7 @@ function templatesReducer (state, action) {
         logDebug(`templateReducer() VM_ACTION_FAILED: ${JSON.stringify(newState)}`);
         return newState;
       }
+      return state;
     }
     default:
       return state;

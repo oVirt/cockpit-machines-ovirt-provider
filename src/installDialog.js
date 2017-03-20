@@ -1,4 +1,4 @@
-import { logDebug, logError } from './helpers.js'
+import { logError } from './helpers.js'
 import { INSTALL_SCRIPT } from './config.js'
 
 const $ = window.$;
@@ -118,6 +118,6 @@ function getLogoutConfirmationFooterHtml() {
 function getLogoutRequiredHtml() {
   return '<div class="alert alert-warning">' +
     '<span class="pficon pficon-warning-triangle-o"></span>' +
-    '<strong>' + _("Installation finished successfuly.") + '</strong>' + _(" Please <b>re-login</b> to take effect.")
+    '<strong>' + _("Installation finished successfuly.") + '</strong>' + _(" Please <b>re-login</b> to take effect.") +
   '</div>';
 }
