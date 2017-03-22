@@ -6,6 +6,7 @@ import { lazyCreateClusterView } from './components/cluster.jsx';
 import { lazyCreateOVirtView } from './components/topLevelViewSwitch.jsx';
 import { lazyCreateVmDisksComponents } from './components/vmDisksSubtab.jsx';
 import { lazyCreateCommonComponents } from './components/commonComponents.jsx';
+import { lazyCreateVmProviderComponents } from './components/vmProviderActions.jsx';
 
 export function lazyCreateReactComponents () {
   lazyCreateCommonComponents();
@@ -16,4 +17,5 @@ export function lazyCreateReactComponents () {
   lazyCreateClusterView();
   lazyCreateVmDisksComponents();
   lazyCreateOVirtView();
+  lazyCreateVmProviderComponents();
 }
