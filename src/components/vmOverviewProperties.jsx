@@ -8,26 +8,26 @@ const exportedComponents = {}; // to be filled by lazy created and exported comp
 /**
  * Build React components not before the React context is available.
  */
-export function lazyCreateVmProviderComponents() {
+export function lazyCreateVmOverviewPropertiesComponents() {
   const React = getReact();
   if (!React) {
-    logError(`lazyCreateVmProviderComponents(): React not registered!`);
+    logError(`lazyCreateVmOverviewPropertiesComponents(): React not registered!`);
     return ;
   }
 
-  const VmProviderActions = ({ vm, providerState }) => { // For reference, extend if needed
+  const VmOverviewProps = ({ vm, providerState }) => { // For reference, extend if needed
     if (!providerState.vms[vm.id]) { // not an oVirt-managed VM
       return null;
     }
 
-    let button = null;
-    if (false) { // TODO: change it once needed
-      button = <button className='btn btn-default'>Some Provider Action</button>;
+    let content = null;
+    if (true) { // Recently not used. Icon and addition props are planed.
+      content = 'Hello from Provider';
     }
 
     return (
-      <div className='btn-group'>
-        {button}
+      <div>
+        {content}
       </div>
     );
   };
@@ -35,7 +35,7 @@ export function lazyCreateVmProviderComponents() {
   /**
    * Just a hook, so far there's no extension for it.
    */
-  exportedComponents.VmProviderActions = ({ vm, providerState }) => (<VmProviderActions vm={vm} providerState={providerState} />);
+  exportedComponents.VmOverviewProps = ({ vm, providerState }) => (<VmOverviewProps vm={vm} providerState={providerState} />);
 }
 
 export default exportedComponents;

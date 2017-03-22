@@ -7,6 +7,7 @@ import { lazyCreateOVirtView } from './components/topLevelViewSwitch.jsx';
 import { lazyCreateVmDisksComponents } from './components/vmDisksSubtab.jsx';
 import { lazyCreateCommonComponents } from './components/commonComponents.jsx';
 import { lazyCreateVmProviderComponents } from './components/vmProviderActions.jsx';
+import { lazyCreateVmOverviewPropertiesComponents } from './components/vmOverviewProperties.jsx';
 
 export function lazyCreateReactComponents () {
   lazyCreateCommonComponents();
@@ -18,4 +19,5 @@ export function lazyCreateReactComponents () {
   lazyCreateVmDisksComponents();
   lazyCreateOVirtView();
   lazyCreateVmProviderComponents();
+  lazyCreateVmOverviewPropertiesComponents();
 }

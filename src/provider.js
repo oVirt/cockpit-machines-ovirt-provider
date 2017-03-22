@@ -23,6 +23,7 @@ import { lazyCreateReactComponents } from './reactComponents';
 import { ovirtReducer }  from './reducers'
 import OVirtTabComponents from './components/hostVmsTabs.jsx';
 import VmProviderComponents from './components/vmProviderActions.jsx';
+import VmOverviewPropsComponents from './components/vmOverviewProperties.jsx';
 // import VmDisksSubtab from './components/vmDisksSubtab.jsx';
 import { appendClusterSwitch } from './components/topLevelViewSwitch.jsx';
 import { CONSOLE_TYPE_ID_MAP } from './config';
@@ -303,6 +304,7 @@ OVIRT_PROVIDER = {
   reducer: ovirtReducer,
 
   vmActionsFactory: () => VmProviderComponents.VmProviderActions,
+  vmOverviewPropsFactory: () => VmOverviewPropsComponents.VmOverviewProps,
 
   vmTabRenderers: [
     {
