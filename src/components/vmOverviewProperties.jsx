@@ -21,7 +21,7 @@ export function lazyCreateVmOverviewPropertiesComponents() {
     }
 
     let content = null;
-    if (true) { // Recently not used. Icon and addition props are planed.
+    if (false) { // Recently not used. Icon and addition props are planed.
       content = 'Hello from Provider';
     }
 
