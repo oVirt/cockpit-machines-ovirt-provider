@@ -308,7 +308,7 @@ OVIRT_PROVIDER = {
 
   vmTabRenderers: [
     {
-      name: _("Cluster"),
+      name: _("oVirt"),
       componentFactory: () => OVirtTabComponents.OVirtTab
     },
   ],
