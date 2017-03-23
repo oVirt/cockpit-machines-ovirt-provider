@@ -63,7 +63,7 @@ export function lazyCreateOVirtView() {
     }
 
     return (
-      <div className='login-in-progress'>
+      <div className='ovirt-provider-login-in-progress'>
         <div className='spinner spinner-sm'/>
         &nbsp;{_("oVirt authentication in progress ...")}
       </div>

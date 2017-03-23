@@ -81,19 +81,35 @@ export function lazyCreateOVirtTab () {
     const template = templates[clusterVm.templateId];
     const version = template.version;
     return (
+      <VmProperty title={_("Base template:")}
+                  value={version.name ?
+                          (`${version.name} (${template.name})`)
+                        : template.name}
+      />
+    );
+  };
+
+  const VmProperty = ({ title, value }) => {
+    return (
       <tr>
         <td>
-          {_("Base template:")}
+          {title}
         </td>
         <td>
-          {version.name ?
-            (`${version.name} (${template.name})`)
-            : template.name}
+          {value}
         </td>
       </tr>
     );
   };
 
+  const VmHA = ({ clusterVm }) => {
+    let value = _("disabled");
+    if (clusterVm.highAvailability && clusterVm.highAvailability.enabled === 'true') {
+      value = _("enabled");
+    }
+
+    return (<VmProperty title={_("HA:")} value={value} />);
+  };
   // -------------------------------------------------------------------------------
   exportedComponents.OVirtTab = React.createClass({ // exported component
     render: function () {
@@ -108,13 +124,25 @@ export function lazyCreateOVirtTab () {
       return (
         <table className='machines-width-max'>
           <tr className='machines-listing-ct-body-detail'>
-            <td>
+            <td className='ovirt-provider-listing-top-column'>
               <table className='form-table-ct'>
+                <VmProperty title={_("Description:")} value={clusterVm.description} />
                 <VmTemplate clusterVm={clusterVm} templates={providerState.templates} />
+                <VmProperty title={_("OS Type:")} value={clusterVm.os.type} />
+              </table>
+            </td>
+            <td className='ovirt-provider-listing-top-column'>
+              <table className='form-table-ct'>
+                <VmHA clusterVm={clusterVm} />
+                <VmProperty title={_("Stateless:")} value={clusterVm.stateless} />
+                <VmProperty title={_("Optimized for:")} value={clusterVm.type} />
+              </table>
+            </td>
+            <td className='ovirt-provider-listing-top-column'>
+              <table className='form-table-ct'>
                 <MigrateTo vm={vm} hosts={providerState.hosts} dispatch={dispatch}/>
               </table>
             </td>
-            <td></td>
           </tr>
         </table>
       );

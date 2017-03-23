@@ -53,10 +53,14 @@
     min-width: 6em;
 }
 
-.login-in-progress {
+.ovirt-provider-login-in-progress {
     display: inline-flex;
     padding: 1em;
     position: absolute;
     top: 0px;
     right: 50%;
+}
+
+.ovirt-provider-listing-top-column {
+    width: 33%;
 }
