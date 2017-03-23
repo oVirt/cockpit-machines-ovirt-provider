@@ -7,6 +7,5 @@ export function getCurrentHost (hosts) {
 }
 
 export function getAllIcons (state) {
-  console.log('getAllIcons():', state);
   return state.config && state.config.providerState ? state.config.providerState.icons : {};
 }

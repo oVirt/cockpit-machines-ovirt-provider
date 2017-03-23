@@ -1,8 +1,8 @@
 import CONFIG, { CSS_FILE_URL } from './config.js'
 
-export function logDebug (msg) {
+export function logDebug (msg, ...args) {
   if (CONFIG.debug) {
-    console.log(`OVIRT_PROVIDER: ${msg}`);
+    console.log(`OVIRT_PROVIDER: ${msg}`, ...args);
   }
 }
 

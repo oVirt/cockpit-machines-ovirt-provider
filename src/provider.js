@@ -330,13 +330,14 @@ OVIRT_PROVIDER = {
 
   SUSPEND_VM ({ id, name }) {
     logDebug(`SUSPEND_VM(id=${id})`);
-    setTimeout(forceNextOvirtPoll, 15000); // hack to improve user experience
-    setTimeout(forceNextOvirtPoll, 30000);
-    setTimeout(forceNextOvirtPoll, 45000);
     return (dispatch) => ovirtApiPost(
       `vms/${id}/suspend`,
-      '<action />',
+      '<action><async>false</async></action>',
       buildVmFailHandler({dispatch, vmName: name, msg: _("SUSPEND action failed")})
+    ).then( data => {
+      logDebug('SUSPEND_VM finished', data);
+      setTimeout(forceNextOvirtPoll, 5000); // hack for better user experience
+    }
     );
   },
 
