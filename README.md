@@ -1,3 +1,6 @@
+
+[![Build Status](https://travis-ci.org/oVirt/cockpit-machines-ovirt-provider.svg?branch=master)](https://travis-ci.org/oVirt/cockpit-machines-ovirt-provider)
+
 # oVirt External Prvider for Cockpit-machines
 With this external provider, the `machines` plugin in Cockpit can redirect actions to oVirt REST API instead of default Libvirt.
  
