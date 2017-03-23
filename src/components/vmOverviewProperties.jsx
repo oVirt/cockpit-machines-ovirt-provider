@@ -15,20 +15,31 @@ export function lazyCreateVmOverviewPropertiesComponents() {
     return ;
   }
 
+  const VmProperty = ({ title, value }) => {
+    return (
+      <tr>
+        <td>
+          {title}
+        </td>
+        <td>
+          {value}
+        </td>
+      </tr>
+    );
+  };
+
   const VmOverviewProps = ({ vm, providerState }) => { // For reference, extend if needed
-    if (!providerState.vms[vm.id]) { // not an oVirt-managed VM
+    const clusterVm = providerState.vms[vm.id];
+    if (!clusterVm) { // not an oVirt-managed VM
       return null;
     }
 
-    let content = null;
-    if (false) { // Recently not used. Icon and additional props are planed.
-      content = 'Hello from Provider';
-    }
-
     return (
-      <div>
-        {content}
-      </div>
+      <td className='ovirt-provider-listing-top-column'>
+        <table className='form-table-ct'>
+          <VmProperty title={_("Description:")} value={clusterVm.description}/>
+        </table>
+      </td>
     );
   };
 

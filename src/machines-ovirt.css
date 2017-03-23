@@ -63,4 +63,5 @@
 
 .ovirt-provider-listing-top-column {
     width: 33%;
+    vertical-align: top;
 }
