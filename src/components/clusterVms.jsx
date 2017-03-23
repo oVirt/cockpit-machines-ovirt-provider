@@ -64,23 +64,37 @@ export function lazyCreateClusterVms() {
   };
 
   const VmActions = ({ vm, hostName, dispatch }) => {
-    if (['shut off', 'down'].indexOf(vm.state) >= 0) {
-      // TODO: disable the button after execution, reenable at next refresh
-      return (<span>
-        <DropdownButtons buttons={
-          [{
-              title: _("Run"),
-              action: () => dispatch(startVm(vm)),
-              id: `cluster-${vm.id}-run`
-            }, {
-              title: _("Run Here"),
-              action: () => dispatch(startVm(vm, hostName)),
-              id: `cluster-${vm.id}-run-here`
-            }]
-          } />
-        <VmLastMessage vm={vm}/>
-        </span>);
+    // TODO: disable the button after execution, reenable at next refresh
+    let buttons = null;
+
+    const runButton = {
+      title: _("Run"),
+      action: () => dispatch(startVm(vm)),
+      id: `cluster-${vm.id}-run`
+    };
+    const runHereButton = {
+      title: _("Run Here"),
+      action: () => dispatch(startVm(vm, hostName)),
+      id: `cluster-${vm.id}-run-here`
+    };
+
+    if (['suspended'].indexOf(vm.state) >= 0) {
+      buttons = [runButton];
     }
+
+    if (['shut off', 'down'].indexOf(vm.state) >= 0) {
+      buttons = [runButton, runHereButton];
+    }
+
+    if (buttons) {
+      return (
+        <span>
+          <DropdownButtons buttons={buttons}/>
+          <VmLastMessage vm={vm}/>
+        </span>
+      );
+    }
+
     return null;
   };
 

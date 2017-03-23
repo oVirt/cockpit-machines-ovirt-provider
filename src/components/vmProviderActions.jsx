@@ -1,5 +1,6 @@
 import { getReact } from '../react.js';
 import { logError } from '../helpers';
+import { suspendVm } from '../actions';
 
 const _ = (m) => m; // TODO: add translation
 
@@ -15,19 +16,18 @@ export function lazyCreateVmProviderComponents() {
     return ;
   }
 
-  const VmProviderActions = ({ vm, providerState }) => { // For reference, extend if needed
-    if (!providerState.vms[vm.id]) { // not an oVirt-managed VM
+  const VmProviderActions = ({ vm, providerState, dispatch }) => {
+    const clusterVm = providerState.vms[vm.id];
+    if (!clusterVm) { // not an oVirt-managed VM
       return null;
     }
 
-    let button = null;
-    if (false) { // TODO: change it once needed
-      button = <button className='btn btn-default'>Some Provider Action</button>;
-    }
-
+    // TODO: add user confirmation
     return (
       <div className='btn-group'>
-        {button}
+        <button className='btn btn-default' onClick={() => dispatch(suspendVm({id: clusterVm.id, name: clusterVm.name, connectionName: vm.connectionName}))}>
+          {_("Suspend")}
+        </button>
       </div>
     );
   };
@@ -35,7 +35,7 @@ export function lazyCreateVmProviderComponents() {
   /**
    * Just a hook, so far there's no extension for it.
    */
-  exportedComponents.VmProviderActions = ({ vm, providerState }) => (<VmProviderActions vm={vm} providerState={providerState} />);
+  exportedComponents.VmProviderActions = ({ vm, providerState, dispatch }) => (<VmProviderActions vm={vm} providerState={providerState} dispatch={dispatch}/>);
 }
 
 export default exportedComponents;

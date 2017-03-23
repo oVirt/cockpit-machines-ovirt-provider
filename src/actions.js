@@ -76,6 +76,10 @@ export function migrateVm (vmId, vmName, hostId) {
   return OVIRT_PROVIDER.actions.virtMiddleware('MIGRATE_VM', { vmId, vmName, hostId });
 }
 
+export function suspendVm ({ id, name, connectionName }) {
+  return OVIRT_PROVIDER.actions.virtMiddleware('SUSPEND_VM', { id, name, connectionName });
+}
+
 export function createVm ({ templateName, clusterName, vm }) {
   return OVIRT_PROVIDER.actions.virtMiddleware('CREATE_VM', { templateName, clusterName, vm });
 }
