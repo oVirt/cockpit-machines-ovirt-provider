@@ -52,3 +52,11 @@
 .ovirt-provider-cluster-vms-state {
     min-width: 6em;
 }
+
+.login-in-progress {
+    display: inline-flex;
+    padding: 1em;
+    position: absolute;
+    top: 0px;
+    right: 50%;
+}

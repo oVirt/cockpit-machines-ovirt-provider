@@ -1,4 +1,5 @@
 import { getReact } from '../react.js';
+import CONFIG from '../config.js'
 
 import { logError } from '../helpers.js';
 import { switchToplevelVisibility } from '../actions';
@@ -52,6 +53,25 @@ export function lazyCreateOVirtView() {
   const { VdsmView } = VdsmComponents;
 
   /**
+   * Not a pure function - state depends on CONFIG.token.
+   *
+   * React's shouldComponentUpdate() should be used, but it so far works anyway - so let's keep it as potential TODO.
+   */
+  const LoginInProgress = () => {
+    if (CONFIG.token) {
+      return null;
+    }
+
+    return (
+      <div className='login-in-progress'>
+        <div className='spinner spinner-sm'/>
+        &nbsp;{_("oVirt authentication in progress ...")}
+      </div>
+    );
+  };
+
+
+  /**
    * oVirt specific top-level component switch
    *
    * TODO: this will be adjusted once cockpit:machines gets support for switching top-level components
@@ -68,20 +88,30 @@ export function lazyCreateOVirtView() {
     // Hack to switch visibility of top-level components without parent cockpit:machines awareness
     if (providerState.visibility.clusterView) {
       $('#app').hide();
-      return (<ClusterView vms={providerState.vms}
-                           hosts={providerState.hosts}
-                           templates={providerState.templates}
-                           clusters={providerState.clusters}
-                           dispatch={dispatch}
-                           config={config}
-                           view={providerState.visibility.clusterView} />);
+      return (
+        <div>
+          <LoginInProgress />
+          <ClusterView vms={providerState.vms}
+                       hosts={providerState.hosts}
+                       templates={providerState.templates}
+                       clusters={providerState.clusters}
+                       dispatch={dispatch}
+                       config={config}
+                       view={providerState.visibility.clusterView}/>
+        </div>
+      );
     } else if (providerState.visibility.vdsmView) {
       $('#app').hide();
-      return (<VdsmView dispatch={dispatch} />);
+      return (
+        <div>
+          <LoginInProgress />
+          <VdsmView dispatch={dispatch}/>
+        </div>
+      );
     }
 
     $('#app').show(); // Host Vms List will be rendered by parent cockpit:machine
-    return null;
+    return (<LoginInProgress />);
   };
 
   /**
