@@ -28,6 +28,23 @@ export function lazyCreateVmOverviewPropertiesComponents() {
     );
   };
 
+  const VmIcon = ({ icons, iconId }) => {
+    if (!iconId || !icons || !icons[iconId] || !icons[iconId].data) {
+      return null;
+    }
+
+    const icon = icons[iconId];
+    const src = `data:${icon.type};base64,${icon.data}`;
+
+    return (
+      <tr>
+        <td colSpan='2'>
+          <img src={src} className='ovirt-provider-overview-vm-icon' alt='' />
+        </td>
+      </tr>
+    );
+  };
+
   const VmOverviewProps = ({ vm, providerState }) => { // For reference, extend if needed
     const clusterVm = providerState.vms[vm.id];
     if (!clusterVm) { // not an oVirt-managed VM
@@ -37,7 +54,8 @@ export function lazyCreateVmOverviewPropertiesComponents() {
     return (
       <td className='ovirt-provider-listing-top-column'>
         <table className='form-table-ct'>
-          <VmProperty title={_("Description:")} value={clusterVm.description}/>
+          <VmProperty title={_("Description:")} value={clusterVm.description} />
+          <VmIcon icons={providerState.icons} iconId={clusterVm.icons.largeId} />
         </table>
       </td>
     );

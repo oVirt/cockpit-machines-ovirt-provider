@@ -51,6 +51,22 @@ function clustersReducer (state, action) {
   }
 }
 
+function iconsReducer (state, action) {
+  state = state || {}; // object of 'iconId: icon'
+
+  switch (action.type) {
+    case 'OVIRT_UPDATE_ICON':
+    {
+      const newState = Object.assign({}, state);
+      newState[action.payload.id] = newState[action.payload.id] || {};
+      Object.assign(newState[action.payload.id], action.payload); // merge instead of replace, is it as expected?
+      return newState;
+    }
+    default:
+      return state;
+  }
+}
+
 // TODO: this will be replaced once cockpit:machines gets support for switching top-level components
 function visibilityReducer (state, action) {
   state = state || {}; // object of clusterView:false, hostView:false, vdsmView:false
@@ -154,15 +170,6 @@ function templatesReducer (state, action) {
       logDebug(`templateReducer() VM_ACTION_FAILED payload: ${JSON.stringify(action.payload)}`);
       if (action.payload.detailForNonexisting && action.payload.detailForNonexisting.templateName) {
         const templateId = Object.getOwnPropertyNames(state).filter(templateId => state[templateId].name === action.payload.detailForNonexisting.templateName);
-        /*
-         const newState = Object.assign({}, state);
-         newState[templateId] = newState[templateId] || {};
-         Object.assign(newState[templateId],
-         { lastMessage: action.payload.message, lastMessageDetail: action.payload.detail });
-         return newState;
-         }
-         return state;
-         */
         const updatedTemplate = Object.assign({}, state[templateId],
           {lastMessage: action.payload.message, lastMessageDetail: action.payload.detail});
         const updatedPartOfState = {};
@@ -200,6 +207,7 @@ export function ovirtReducer (state, action) {
   newState = callSubReducer(newState, action, vmsReducer, 'vms');
   newState = callSubReducer(newState, action, templatesReducer, 'templates');
   newState = callSubReducer(newState, action, clustersReducer, 'clusters');
+  newState = callSubReducer(newState, action, iconsReducer, 'icons');
 
   return newState;
 }

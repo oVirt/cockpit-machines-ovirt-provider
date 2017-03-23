@@ -65,12 +65,27 @@ export function removeUnlistedClusters({allClusterIds}) {
   }
 }
 
+export function updateIcon(icon) {
+  return {
+    type: 'OVIRT_UPDATE_ICON',
+    payload: icon
+  };
+}
+
 export function migrateVm (vmId, vmName, hostId) {
   return OVIRT_PROVIDER.actions.virtMiddleware('MIGRATE_VM', { vmId, vmName, hostId });
 }
 
 export function createVm ({ templateName, clusterName, vm }) {
   return OVIRT_PROVIDER.actions.virtMiddleware('CREATE_VM', { templateName, clusterName, vm });
+}
+
+export function downloadIcons ({ iconIds, forceReload }) {
+  return OVIRT_PROVIDER.actions.virtMiddleware('DOWNLOAD_ICONS', { iconIds, forceReload });
+}
+
+export function downloadIcon ({ iconId }) {
+  return OVIRT_PROVIDER.actions.virtMiddleware('DOWNLOAD_ICON', { iconId });
 }
 
 export function switchToplevelVisibility (topLevelVisibleComponent, subview) {

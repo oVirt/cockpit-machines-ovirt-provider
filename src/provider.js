@@ -16,11 +16,13 @@
 import { logDebug, logError, ovirtApiPost, ovirtApiGet, fileDownload, loadCss } from './helpers.js'
 import { readConfiguration } from './configFuncs.js'
 import { doLogin } from './login.js'
-import { vmActionFailed } from './actions';
+import { vmActionFailed, downloadIcon, updateIcon } from './actions';
 
 import { registerReact } from './react.js';
 import { lazyCreateReactComponents } from './reactComponents';
 import { ovirtReducer }  from './reducers'
+import { getAllIcons } from './selectors';
+
 import OVirtTabComponents from './components/hostVmsTabs.jsx';
 import VmProviderComponents from './components/vmProviderActions.jsx';
 import VmOverviewPropsComponents from './components/vmOverviewProperties.jsx';
@@ -28,7 +30,7 @@ import VmOverviewPropsComponents from './components/vmOverviewProperties.jsx';
 import { appendClusterSwitch } from './components/topLevelViewSwitch.jsx';
 import { CONSOLE_TYPE_ID_MAP } from './config';
 
-import { pollOvirt, forceNextOvirtPoll } from './ovirt';
+import { pollOvirt, forceNextOvirtPoll, oVirtIconToInternal } from './ovirt';
 
 const _ = (m) => m; // TODO: add translation
 
@@ -67,6 +69,7 @@ OVIRT_PROVIDER = {
   },
   parentReactComponents: {}, // to reuse look&feel, see init()
   nextProvider: null,
+  reduxStore: null,
 
   /**
    * Initialize the Provider
@@ -95,7 +98,8 @@ OVIRT_PROVIDER = {
     OVIRT_PROVIDER.parentReactComponents = exportedReactComponents;
     OVIRT_PROVIDER.nextProvider = defaultProvider;
     OVIRT_PROVIDER.vmStateMap = { // TODO: list oVirt specific states, compare to ovirt.js:mapOvirtStatusToLibvirtState()
-    }; // reuse map for Libvirt (defaultProvider.vmStateMap) since it is used for data retrieval
+        }; // reuse map for Libvirt (defaultProvider.vmStateMap) since it is used for data retrieval
+    OVIRT_PROVIDER.reduxStore = reduxStore;
 
     loadCss();
     registerReact(React);
@@ -233,6 +237,29 @@ OVIRT_PROVIDER = {
       action,
       buildVmFailHandler({dispatch, vmName, msg: _("MIGRATE action failed")})
     );
+  },
+
+  DOWNLOAD_ICON: ({ iconId }) => {
+    logDebug(`DOWNLOAD_ICON(iconId=${iconId})`);
+    return (dispatch) => ovirtApiGet(
+      `icons/${iconId}`
+    ).then(icon => {
+      if (icon['media_type'] && icon['data']) {
+        dispatch(updateIcon(oVirtIconToInternal(icon)));
+      }
+    });
+  },
+
+  DOWNLOAD_ICONS: ({ iconIds, forceReload }) => {
+    logDebug(`DOWNLOAD_ICONS(forceReload=${forceReload}) called for ${iconIds.length} icon ids`);
+
+    // Hack to get actual state, avoid use of OVIRT_PROVIDER.reduxStore as much as possible
+    const existingIcons = forceReload ? {} : getAllIcons(OVIRT_PROVIDER.reduxStore.getState());
+    const iconIdsToDownload = Object.getOwnPropertyNames(iconIds).filter( iconId => !existingIcons[iconId] );
+
+    return (dispatch) => {
+      iconIdsToDownload.forEach( iconId => dispatch(downloadIcon({ iconId })) );
+    }
   },
 
   // TODO: password is retrieved, but SSL remains
