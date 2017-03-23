@@ -332,7 +332,7 @@ OVIRT_PROVIDER = {
     logDebug(`SUSPEND_VM(id=${id})`);
     setTimeout(forceNextOvirtPoll, 15000); // hack to improve user experience
     setTimeout(forceNextOvirtPoll, 30000);
-    setTimeout(forceNextOvirtPoll, 45000); 
+    setTimeout(forceNextOvirtPoll, 45000);
     return (dispatch) => ovirtApiPost(
       `vms/${id}/suspend`,
       '<action />',
