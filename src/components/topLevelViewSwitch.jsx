@@ -25,11 +25,33 @@ export function appendClusterSwitch(store) {
   const { dispatch } = store;
 
   $('body').append( hostClusterSwitchHtml() );
+  $('body').append( LoginInProgressHtml() );
+
   $("#ovirt-provider-toplevel-switch-host").on('click', () => dispatch(switchToplevelVisibility('hostView')));
   $("#ovirt-provider-toplevel-switch-cluster").on('click', () => dispatch(switchToplevelVisibility('clusterView')));
   $("#ovirt-provider-toplevel-switch-vdsm").on('click', () => dispatch(switchToplevelVisibility('vdsmView')));
 
   exportedComponents.renderOVirtView(store);
+}
+
+function LoginInProgressHtml() {
+  if (CONFIG.token) {
+    return '<div />';
+  }
+
+  return '<div class="ovirt-provider-login-in-progress">' +
+    '<div class="spinner spinner-sm"/>' +
+    `&nbsp;${_("oVirt authentication in progress ...")}` +
+    '</div>';
+}
+
+export function toggleLoginInProgress() {
+  console.log('toggleLoginInProgress() called');
+  $(".ovirt-provider-login-in-progress").remove();
+  if (!CONFIG.token) {
+    console.log('toggleLoginInProgress() token not available');
+    $('body').append( LoginInProgressHtml() );
+  }
 }
 
 function hostClusterSwitchHtml() {
@@ -53,25 +75,6 @@ export function lazyCreateOVirtView() {
   const { VdsmView } = VdsmComponents;
 
   /**
-   * Not a pure function - state depends on CONFIG.token.
-   *
-   * React's shouldComponentUpdate() should be used, but it so far works anyway - so let's keep it as potential TODO.
-   */
-  const LoginInProgress = () => {
-    if (CONFIG.token) {
-      return null;
-    }
-
-    return (
-      <div className='ovirt-provider-login-in-progress'>
-        <div className='spinner spinner-sm'/>
-        &nbsp;{_("oVirt authentication in progress ...")}
-      </div>
-    );
-  };
-
-
-  /**
    * oVirt specific top-level component switch
    *
    * TODO: this will be adjusted once cockpit:machines gets support for switching top-level components
@@ -90,7 +93,6 @@ export function lazyCreateOVirtView() {
       $('#app').hide();
       return (
         <div>
-          <LoginInProgress />
           <ClusterView vms={providerState.vms}
                        hosts={providerState.hosts}
                        templates={providerState.templates}
@@ -104,14 +106,13 @@ export function lazyCreateOVirtView() {
       $('#app').hide();
       return (
         <div>
-          <LoginInProgress />
           <VdsmView dispatch={dispatch}/>
         </div>
       );
     }
 
     $('#app').show(); // Host Vms List will be rendered by parent cockpit:machine
-    return (<LoginInProgress />);
+    return null;
   };
 
   /**

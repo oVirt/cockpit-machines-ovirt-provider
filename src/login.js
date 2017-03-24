@@ -1,5 +1,6 @@
 import { logDebug } from './helpers.js'
 import CONFIG from './config.js'
+import { toggleLoginInProgress } from './components/topLevelViewSwitch.jsx'
 
 export function doLogin () {
   logDebug('_login() called')
@@ -15,6 +16,7 @@ export function doLogin () {
     token = location.hash.substr(tokenStart + 'token='.length)
     logDebug(`doLogin(): token found in params: ${token}`)
     CONFIG.token = token
+    toggleLoginInProgress()
     window.sessionStorage.setItem('OVIRT_PROVIDER_TOKEN', token)
     logDebug(`doLogin(): token from params stored to sessionStorage, now removing the token hash from the url`)
     window.top.location.hash = ''
@@ -23,7 +25,7 @@ export function doLogin () {
   } else if (token) { // found in the sessionStorrage
     logDebug(`doLogin(): token found in sessionStorrage: ${token}`)
     CONFIG.token = token
-
+    toggleLoginInProgress()
     return true
   } else { // redirect to oVirt's SSO
     const hostUrl = `https://${window.location.host}`
