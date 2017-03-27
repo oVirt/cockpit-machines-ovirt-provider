@@ -51,5 +51,5 @@ make install DESTDIR=%{buildroot}
 %{_datarootdir}/cockpit/machines/provider
 
 %changelog
-* Mon Mar 13 2017 Marek Libra <mlibra@redhat.com> - 0.0.1
-- first version
+* Mon Mar 27 2017 Marek Libra <mlibra@redhat.com> - 0.0.1
+- first vrelease

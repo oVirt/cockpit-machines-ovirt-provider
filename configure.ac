@@ -20,7 +20,7 @@ define([VERSION_MAJOR], [0])
 define([VERSION_MINOR], [0])
 define([VERSION_FIX], [1])
 define([VERSION_NUMBER], VERSION_MAJOR[.]VERSION_MINOR[.]VERSION_FIX)
-define([VERSION_RELEASE], [1])
+define([VERSION_RELEASE], [2])
 
 AC_INIT([cockpit-machines-ovirt-provider], VERSION_NUMBER, [mlibra@redhat.com])
 
