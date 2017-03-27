@@ -4,13 +4,12 @@
 # oVirt External Prvider for Cockpit-machines
 With this external provider, the `machines` plugin in Cockpit can redirect actions to oVirt REST API instead of default Libvirt.
  
-# Cockpit-machines External Providers in general 
- Please refer to cockpit-machines [README.md](https://github.com/cockpit-project/cockpit/blob/master/pkg/machines/README.md) for external plugin description and API which is implemented by this project.
+Please refer to cockpit-machines [README.md](https://github.com/cockpit-project/cockpit/blob/master/pkg/machines/README.md) for external plugin description and API which is implemented by this project.
 
- The entry point for the provider API implementation is `src/provider.js`.
- It's fine to implement the API using `VanillaJS`, as far as the simple API contract is met.
+The entry point for the provider API implementation is `src/provider.js`.
+It's fine to implement the API using `VanillaJS`, as far as the simple API contract is met.
  
- For more complex scenarios `ES6, Babel, Webpack and React` can be leveraged as shown in this project. 
+For more complex scenarios `ES6, Babel, Webpack and React` can be leveraged as shown in this project. 
 
 # Installation
 Actual installation is as simple as copying 2 files.
@@ -47,7 +46,7 @@ To install:
     dnf install cockpit-machines-ovirt-provider
 
 ## Development Build
-If RPM installation is not enough and you are looking for build from sources, this section is for you.
+If RPM installation is not enough and you are willing to build from sources, this section is for you.
 
 ### Dev Build Prerequisites
 All JavaScript dependencies can be installed via `npm i` (see package.json file).
@@ -58,7 +57,7 @@ To do so, enable the `tested` repository from
 
     http://resources.ovirt.org/repos/ovirt/tested/master/rpm
     
-Till [BZ 1427045](https://bugzilla.redhat.com/show_bug.cgi?id=1427045) is finished, this step has to be done manually. 
+Until [BZ 1427045](https://bugzilla.redhat.com/show_bug.cgi?id=1427045) is finished, this step has to be done manually. 
 
 To install all dependencies:
 
@@ -78,9 +77,10 @@ The result can be found under `dist` or `tmp.repos` directories.
 If the project is built from sources, it's enough to just copy `dist/` content under `[COCKPIT_INSTALL_DIR]/machines/provider`.
 
 On an oVirt host machine:
+
     cd [COCKPIT_INSTALL_DIR]/machines
     mkdir -p ./provider
-    cp [PROVIDER_SRC]/dist/* ./provider/
+    cp [PROVIDER_SRC @ BUILD_MACHINE]/dist/* ./provider/
     # and just refresh the cockpit:machines page (press F5) to take effect
   
 The `COCKPIT_INSTALL_DIR` usually refers to `/usr/share/cockpit`.
@@ -88,13 +88,13 @@ The `COCKPIT_INSTALL_DIR` usually refers to `/usr/share/cockpit`.
 The `PROVIDER_SRC` refers to directory where you built the project (probably remote machine).
   
 ## Post install
-Once either the RPM or from sources installation finished, the plugin needs to do some additional configuration, like setting the URL of your oVirt engine.
+Once either the RPM or from sources installation is finished, the plugin needs to do some additional configuration, like setting the URL of your oVirt engine.
  
 To do so:
 
  - login into Cockpit as `root` user
  - enter the `machines` plugin, installation dialog pops-up
- - please submit URL of your running **oVirt engine**
+ - submit URL of your running **oVirt engine**
      - Example: `https://my.domain.com/ovirt-engine`      
      - following config files will be updated:
          - cockpit/machines/override.json
