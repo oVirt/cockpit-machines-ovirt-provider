@@ -262,7 +262,6 @@ OVIRT_PROVIDER = {
     }
   },
 
-  // TODO: password is retrieved, but SSL remains
   onConsoleAboutToShow: ({ vm, type }) => {
     logDebug(`onConsoleAboutToShow(payload: {vmId: "${vm.vmId}", type: "${type}"}`);
     const orig = vm.displays[type];
@@ -276,11 +275,10 @@ OVIRT_PROVIDER = {
       { Accept: 'application/x-virt-viewer' }
     ).then(vvFile => {
       const password = vvFile.match(/[^\r\n]+/g).filter(line => {
-        return line.trim().startsWith("password=");
+        return line.trim().startsWith('password=');
       });
       if (password) {
-        logDebug(`onConsoleAboutToShow(): password found`);
-        consoleDetail.password = password;
+        consoleDetail.password = password[0].substring('password='.length);
       }
       return consoleDetail;
     });
