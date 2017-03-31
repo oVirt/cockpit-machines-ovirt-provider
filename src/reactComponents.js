@@ -8,6 +8,7 @@ import { lazyCreateVmDisksComponents } from './components/vmDisksSubtab.jsx';
 import { lazyCreateCommonComponents } from './components/commonComponents.jsx';
 import { lazyCreateVmProviderComponents } from './components/vmProviderActions.jsx';
 import { lazyCreateVmOverviewPropertiesComponents } from './components/vmOverviewProperties.jsx';
+import { lazyCreateVmConsoleComponents } from './components/vmConsoleComponents.jsx';
 
 export function lazyCreateReactComponents () {
   lazyCreateCommonComponents();
@@ -20,4 +21,5 @@ export function lazyCreateReactComponents () {
   lazyCreateOVirtView();
   lazyCreateVmProviderComponents();
   lazyCreateVmOverviewPropertiesComponents();
+  lazyCreateVmConsoleComponents();
 }

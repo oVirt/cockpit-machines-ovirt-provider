@@ -9,3 +9,7 @@ export function getCurrentHost (hosts) {
 export function getAllIcons (state) {
   return state.config && state.config.providerState ? state.config.providerState.icons : {};
 }
+
+export function isVmManagedByOvirt (state, vmId) {
+  return state.config && state.config.providerState && !!state.config.providerState.vms[vmId];
+}

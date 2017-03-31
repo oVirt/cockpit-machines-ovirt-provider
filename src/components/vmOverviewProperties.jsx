@@ -61,10 +61,8 @@ export function lazyCreateVmOverviewPropertiesComponents() {
     );
   };
 
-  /**
-   * Just a hook, so far there's no extension for it.
-   */
-  exportedComponents.VmOverviewProps = ({ vm, providerState }) => (<VmOverviewProps vm={vm} providerState={providerState} />);
+  // exportedComponents.VmOverviewProps = ({ vm, providerState }) => (<VmOverviewProps vm={vm} providerState={providerState} />);
+  exportedComponents.VmOverviewProps = VmOverviewProps;
 }
 
 export default exportedComponents;

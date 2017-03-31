@@ -32,10 +32,8 @@ export function lazyCreateVmProviderComponents() {
     );
   };
 
-  /**
-   * Just a hook, so far there's no extension for it.
-   */
-  exportedComponents.VmProviderActions = ({ vm, providerState, dispatch }) => (<VmProviderActions vm={vm} providerState={providerState} dispatch={dispatch}/>);
+  // exportedComponents.VmProviderActions = ({ vm, providerState, dispatch }) => (<VmProviderActions vm={vm} providerState={providerState} dispatch={dispatch}/>);
+  exportedComponents.VmProviderActions = VmProviderActions
 }
 
 export default exportedComponents;

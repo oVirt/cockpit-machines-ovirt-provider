@@ -13,6 +13,8 @@ export const CONSOLE_TYPE_ID_MAP = { // TODO: replace by API call /vms/[ID]/grap
   'rdp': 'rdp_not_yet_supported',
 };
 
+export const CONSOLE_CLIENT_RESOURCES_URL = 'https://www.ovirt.org/documentation/admin-guide/virt/console-client-resources/'; // TODO: branding
+
 const CONFIG = { // will be dynamically replaced by content of CONFIG_FILE_URL within OVIRT_PROVIDER.init()
   /**
    * Set to false to turn off the debug logging

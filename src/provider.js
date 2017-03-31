@@ -21,11 +21,12 @@ import { vmActionFailed, downloadIcon, updateIcon } from './actions';
 import { registerReact } from './react.js';
 import { lazyCreateReactComponents } from './reactComponents';
 import { ovirtReducer }  from './reducers'
-import { getAllIcons } from './selectors';
+import { getAllIcons, isVmManagedByOvirt } from './selectors';
 
 import OVirtTabComponents from './components/hostVmsTabs.jsx';
 import VmProviderComponents from './components/vmProviderActions.jsx';
 import VmOverviewPropsComponents from './components/vmOverviewProperties.jsx';
+import VmConsoleComponents from './components/vmConsoleComponents.jsx';
 // import VmDisksSubtab from './components/vmDisksSubtab.jsx';
 import { appendClusterSwitch } from './components/topLevelViewSwitch.jsx';
 import { CONSOLE_TYPE_ID_MAP } from './config';
@@ -262,12 +263,19 @@ OVIRT_PROVIDER = {
     }
   },
 
-  onConsoleAboutToShow: ({ vm, type }) => {
-    logDebug(`onConsoleAboutToShow(payload: {vmId: "${vm.vmId}", type: "${type}"}`);
+  onConsoleAboutToShow: ({ type, vm, providerState }) => {
+    logDebug(`onConsoleAboutToShow(payload: {vmId: "${vm.id}", type: "${type}"}`);
+    const vmId = vm.id;
     const orig = vm.displays[type];
+
+    if (!isVmManagedByOvirt(OVIRT_PROVIDER.reduxStore.getState(), vmId)) {
+      return new Promise( (resolve, reject) => {
+        resolve(orig);
+      })
+    }
+
     const consoleDetail = Object.assign({}, orig); // to be updated and returned as a result of promise
 
-    const vmId = vm.id;
     const consoleId = CONSOLE_TYPE_ID_MAP[type];
 
     return ovirtApiGet(
@@ -289,7 +297,13 @@ OVIRT_PROVIDER = {
     const vmId = payload.id;
     logDebug(`CONSOLE_VM: requesting .vv file from oVirt for vmId: ${vmId}, type: ${type}`);
 
-    // TODO: console ID is so far considered as a constant in oVirt for particular console type. Anyway, cleaner (but slower) approach would be to query 'vms/${vmId}/graphicsconsoles' first to get full list
+    if (!isVmManagedByOvirt(OVIRT_PROVIDER.reduxStore.getState(), vmId)) {
+      logDebug(`CONSOLE_VM: vmId: ${vmId} is not managed by oVirt, redirecting to Libvirt`);
+      return OVIRT_PROVIDER.nextProvider.GET_VM(payload);
+    }
+
+    // console ID is so far considered as a constant in oVirt for particular console type.
+    // TODO anyway: cleaner (but slower) approach would be to query 'vms/${vmId}/graphicsconsoles' first to get full list
     const consoleId = CONSOLE_TYPE_ID_MAP[type];
 
     if (!consoleId) {
@@ -343,6 +357,7 @@ OVIRT_PROVIDER = {
 
   vmActionsFactory: () => VmProviderComponents.VmProviderActions,
   vmOverviewPropsFactory: () => VmOverviewPropsComponents.VmOverviewProps,
+  consoleClientResourcesFactory: (vm, providerState) => VmConsoleComponents.consoleClientResourcesFactory(vm, providerState),
 
   vmTabRenderers: [
     {
