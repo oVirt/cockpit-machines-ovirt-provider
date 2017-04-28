@@ -19,7 +19,9 @@ export function lazyCreateVmOverviewPropertiesComponents() {
     return (
       <tr>
         <td>
-          {title}
+          <label className='control-label'>
+            {title}
+          </label>
         </td>
         <td>
           {value}
@@ -37,11 +39,7 @@ export function lazyCreateVmOverviewPropertiesComponents() {
     const src = `data:${icon.type};base64,${icon.data}`;
 
     return (
-      <tr>
-        <td colSpan='2'>
-          <img src={src} className='ovirt-provider-overview-vm-icon' alt='' />
-        </td>
-      </tr>
+      <img src={src} className='ovirt-provider-overview-icon' alt={_("VM icon")} />
     );
   };
 
@@ -53,15 +51,20 @@ export function lazyCreateVmOverviewPropertiesComponents() {
 
     return (
       <td className='ovirt-provider-listing-top-column'>
-        <table className='form-table-ct'>
-          <VmProperty title={_("Description:")} value={clusterVm.description} />
-          <VmIcon icons={providerState.icons} iconId={clusterVm.icons.largeId} />
-        </table>
+        <div className='ovirt-provider-columns-container'>
+            <div className='ovirt-provider-columns-one'>
+              <table className='form-table-ct'>
+                <VmProperty title={_("Description:")} value={clusterVm.description} />
+              </table>
+            </div>
+            <div className='ovirt-provider-columns-two'>
+              <VmIcon icons={providerState.icons} iconId={clusterVm.icons.largeId} />
+            </div>
+        </div>
       </td>
     );
   };
 
-  // exportedComponents.VmOverviewProps = ({ vm, providerState }) => (<VmOverviewProps vm={vm} providerState={providerState} />);
   exportedComponents.VmOverviewProps = VmOverviewProps;
 }
 
