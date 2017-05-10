@@ -358,6 +358,7 @@ OVIRT_PROVIDER = {
   vmActionsFactory: () => VmProviderComponents.VmProviderActions,
   vmOverviewPropsFactory: () => VmOverviewPropsComponents.VmOverviewProps,
   consoleClientResourcesFactory: (vm, providerState) => VmConsoleComponents.consoleClientResourcesFactory(vm, providerState),
+  consoleConnectionDetailsFactory: (vm, providerState) => VmConsoleComponents.consoleConnectionDetailsFactory(vm, providerState),
 
   vmTabRenderers: [
     {

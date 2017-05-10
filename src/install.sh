@@ -90,7 +90,7 @@ function updateMachinesManifest() {
   #MACHINES_OVERRIDE=$(dirname ${SCRIPT_DIR})/override.json
   MACHINES_OVERRIDE=${COCKPIT_DIR}/machines/override.json
   echo "{ \
-      \"content-security-policy\": \"default-src 'self' 'unsafe-inline' 'unsafe-eval' data:;connect-src 'self' ws: wss: $ENGINE_URL\" \
+      \"content-security-policy\": \"default-src 'self' 'unsafe-inline' 'unsafe-eval' data: blob:;connect-src 'self' ws: wss: $ENGINE_URL\" \
     }" > ${MACHINES_OVERRIDE} || exit ${EXIT_NO_ACCESS_MACHINES_OVERRIDE}
   echo OK: ${MACHINES_OVERRIDE} generated
 }
