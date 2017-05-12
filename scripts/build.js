@@ -123,6 +123,8 @@ function printErrors(summary, errors) {
 function build(previousSizeMap) {
   console.log('Creating an optimized production build...');
   webpack(config).run((err, stats) => {
+    stats.compilation.warnings.length && printErrors('Warnings appeared during compilation.', stats.compilation.warnings);
+
     if (err) {
       printErrors('Failed to compile.', [err]);
       process.exit(1);
@@ -134,7 +136,8 @@ function build(previousSizeMap) {
     }
 
     if (process.env.CI && stats.compilation.warnings.length) {
-     printErrors('Failed to compile.', stats.compilation.warnings);
+//     printErrors('Failed to compile due to warnings', stats.compilation.warnings);
+     console.log('Failed to compile due to warnings.');   
      process.exit(1);
    }
 
