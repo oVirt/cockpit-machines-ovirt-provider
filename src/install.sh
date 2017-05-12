@@ -67,7 +67,6 @@ function generateProviderConfig() {
 }
 
 function updateShellManifest() {
-  #SHELL_OVERRIDE=$(dirname $(dirname ${SCRIPT_DIR}))/shell/override.json
   SHELL_OVERRIDE=${COCKPIT_DIR}/shell/override.json
   if [ -f ${SHELL_OVERRIDE} ] ; then
     grep -iq 'content-security-policy' ${SHELL_OVERRIDE}
@@ -87,7 +86,6 @@ function updateShellManifest() {
 }
 
 function updateMachinesManifest() {
-  #MACHINES_OVERRIDE=$(dirname ${SCRIPT_DIR})/override.json
   MACHINES_OVERRIDE=${COCKPIT_DIR}/machines/override.json
   echo "{ \
       \"content-security-policy\": \"default-src 'self' 'unsafe-inline' 'unsafe-eval' data: blob:;connect-src 'self' ws: wss: $ENGINE_URL\" \
