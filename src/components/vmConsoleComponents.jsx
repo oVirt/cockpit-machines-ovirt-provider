@@ -15,29 +15,52 @@ export function lazyCreateVmConsoleComponents() {
     logError(`lazyCreateVmConsoleComponents(): React not registered!`);
     return ;
   }
-
-  const ConsoleClientResources = ({ vm, providerState }) => {
+/*
+  const ConnectionDetails = ({ display, onDesktopConsole }) => {
+    return (
+      <td>
+        <ul>
+          <li>
+            <a href='#' onClick={() => onDesktopConsole(display)}>
+              {_("Download a helper file")}
+            </a>
+          </li>
+        </ul>
+      </td>
+    )
+  }
+*/
+  const ConsoleClientResources = () => {
     return (
       <div>
         {_("In case of trouble, please refer the ")}&nbsp;
         <a href={CONSOLE_CLIENT_RESOURCES_URL} target='_blank'>
-          {_("console client resources.")}
+          {_("oVirt's console client resources.")}
         </a>
       </div>
-    );
-  };
-
-  const ConsoleConnectionDetails = () => {
-    return null ; // recently not used, render nothing
+    )
   }
+/*
+  const ConsoleConnectionDetails = ({ displays, onDesktopConsole }) => {
+    const isVNC = !!displays.vnc
+    const isSPICE = !!displays.spice
 
+    return (
+      <tr>
+        {isSPICE && <ConnectionDetails display={displays['spice']} onDesktopConsole={onDesktopConsole} />}
+        {isVNC && <ConnectionDetails display={displays['vnc']} onDesktopConsole={onDesktopConsole} />}
+      </tr>
+    );
+  }
+*/
   exportedComponents.consoleClientResourcesFactory = (vm, providerState) => providerState.vms[vm.id] ?
     ConsoleClientResources
     : null; // not an oVirt-managed VM, so default cockpit:machines implementation of ConsoleClientResources will be used
-
+/*
   exportedComponents.consoleConnectionDetailsFactory = (vm, providerState) => providerState.vms[vm.id] ?
     ConsoleConnectionDetails
     : null; // not an oVirt-managed VM, so default cockpit:machines implementation of ConnectionDetails will be used
+    */
 }
 
 export default exportedComponents;

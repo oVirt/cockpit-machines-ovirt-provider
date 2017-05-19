@@ -299,7 +299,7 @@ OVIRT_PROVIDER = {
 
     if (!isVmManagedByOvirt(OVIRT_PROVIDER.reduxStore.getState(), vmId)) {
       logDebug(`CONSOLE_VM: vmId: ${vmId} is not managed by oVirt, redirecting to Libvirt`);
-      return OVIRT_PROVIDER.nextProvider.GET_VM(payload);
+      return OVIRT_PROVIDER.nextProvider.CONSOLE_VM(payload);
     }
 
     // console ID is so far considered as a constant in oVirt for particular console type.
@@ -358,7 +358,7 @@ OVIRT_PROVIDER = {
   vmActionsFactory: () => VmProviderComponents.VmProviderActions,
   vmOverviewPropsFactory: () => VmOverviewPropsComponents.VmOverviewProps,
   consoleClientResourcesFactory: (vm, providerState) => VmConsoleComponents.consoleClientResourcesFactory(vm, providerState),
-  consoleConnectionDetailsFactory: (vm, providerState) => VmConsoleComponents.consoleConnectionDetailsFactory(vm, providerState),
+// not used  consoleConnectionDetailsFactory: (vm, providerState, onDesktopConsole) => VmConsoleComponents.consoleConnectionDetailsFactory(vm, providerState, onDesktopConsole),
 
   vmTabRenderers: [
     {

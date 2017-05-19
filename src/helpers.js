@@ -118,7 +118,7 @@ export function fileDownload ({ data, fileName = 'myFile.dat', mimeType = 'appli
   if (data) {
     const a = document.createElement('a');
 
-    // Workaround since I can't get CSP working on Firefox for this
+    // Workaround since I can't get CSP working on newer Firefox versions for this
     const isFirefox = navigator.userAgent.toLowerCase().indexOf('firefox') > -1;
 
     if (!isFirefox && 'download' in a) { // html5 A[download]
@@ -130,9 +130,11 @@ export function fileDownload ({ data, fileName = 'myFile.dat', mimeType = 'appli
       return true;
     } else { // do iframe dataURL download (old ch+FF):
       const f = document.createElement('iframe');
+      f.width='1';
+      f.height='1';
       document.body.appendChild(f);
-      const niceText='\n[...............................GraphicsConsole]\n'
-      f.src = `data:${mimeType},${encodeURIComponent(data + niceText)}`;
+      const nicerText='\n[...............................GraphicsConsole]\n'
+      f.src = `data:${mimeType},${encodeURIComponent(data + nicerText)}`;
       window.setTimeout(() => document.body.removeChild(f), 333);
       return true;
     }
