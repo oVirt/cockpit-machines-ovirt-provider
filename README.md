@@ -34,6 +34,7 @@ No matter you are going to build from sources or install from RPM, following mus
 
         engine-config -s CORSSupport=true # To turn on the CORS support for the REST API     
         engine-config -s CORSAllowDefaultOrigins=true  # To allow CORS for all configured hosts
+        systemct restart ovirt-engine
 
 ## RPM Installation
 The RPM builds are released on [Copr repository](https://copr.fedorainfracloud.org/coprs/mlibra/cockpit-machines-ovirt-provider/).
