@@ -54,11 +54,14 @@
 }
 
 .ovirt-provider-login-in-progress {
-    display: inline-flex;
-    padding: 1em;
     position: absolute;
+    z-index: 2000;
+    padding: 2px;
     top: 0px;
-    right: 50%;
+    margin-left: 50%;
+    border-color: #ecc89e;
+    min-width: 15em;
+    text-align: center;
 }
 
 .ovirt-provider-listing-top-column {
