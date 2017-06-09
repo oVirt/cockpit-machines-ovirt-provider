@@ -471,7 +471,9 @@ function checkApiVersion () {
 
 function setOvirtApiCheckResult (passed) {
   OVIRT_PROVIDER.ovirtApiMetadata.passed = passed;
-  showFailedOvirtApiVersionCheck(REQUIRED_OVIRT_API_VERSION)
+  if (!passed) {
+    showFailedOvirtApiVersionCheck(REQUIRED_OVIRT_API_VERSION)
+  }
 }
 
 export function isOvirtApiCheckPassed () {
