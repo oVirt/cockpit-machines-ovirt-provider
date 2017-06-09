@@ -1,4 +1,4 @@
-import { deferFunctionCall, logDebug, logError } from './helpers.js'
+import { /* deferFunctionCall, */ logDebug, logError } from './helpers.js'
 import { showPluginInstallationDialog } from './installDialog.js'
 import CONFIG, { CONFIG_FILE_URL } from './config.js'
 
@@ -22,7 +22,8 @@ export function readConfiguration (onConfigRead) {
       CONFIG.OVIRT_BASE_URL = baseUrl;
 
       logDebug(`Configuration parsed, using merged result: ${JSON.stringify(CONFIG)}`);
-      return deferFunctionCall(onConfigRead);
+      // return deferFunctionCall(onConfigRead);
+      return onConfigRead();
     }, (e) => { // AJAX failed
       if (e && e.status === 404) {
         logError(`Configuration of cockpit-machines-ovirt-provider not found. It means, the install script has not been called yet.`);

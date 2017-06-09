@@ -2,6 +2,7 @@ import { updateHost, removeUnlistedHosts, updateVm, removeUnlistedVms,
   updateTemplate, removeUnlistedTemplates, updateCluster, removeUnlistedClusters, downloadIcons } from './actions';
 import { callOncePerTimeperiod, logDebug, logError, ovirtApiGet } from './helpers';
 import CONFIG from './config';
+import { isOvirtApiCheckPassed } from './provider'
 
 let lastOvirtPoll = -1; // timestamp
 /**
@@ -10,6 +11,11 @@ let lastOvirtPoll = -1; // timestamp
  * @param dispatch
  */
 export function pollOvirt({dispatch}) {
+  if (!isOvirtApiCheckPassed()) {
+    logDebug(`Skipping oVirt poling due to failed/unfinished oVirt API check`);
+    return ;
+  }
+
   callOncePerTimeperiod({
     lastCall: lastOvirtPoll,
     delay: CONFIG.ovirt_polling_interval,

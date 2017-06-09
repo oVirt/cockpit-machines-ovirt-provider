@@ -121,3 +121,15 @@ function getLogoutRequiredHtml() {
     '<strong>' + _("Installation finished successfuly.") + '</strong>' + _(" Please <b>re-login</b> to take effect.") +
   '</div>';
 }
+
+// This function might be elsewhere but let's keep JQuery-based stuff at one place
+export function showFailedOvirtApiVersionCheck (required) {
+  const html = '<div class="alert alert-danger">' +
+    '<span class="pficon pficon-error-circle-o"></span>' +
+    '<strong>' + _("oVirt API version check failed.") + '</strong>' +
+    _(" Minimal version required: ") +
+    '<strong>' + required.major + '.' + required.minor + '</strong>' +
+    '</div>';
+
+  $("body").append(html);
+}

@@ -29,7 +29,8 @@ import VmOverviewPropsComponents from './components/vmOverviewProperties.jsx';
 import VmConsoleComponents from './components/vmConsoleComponents.jsx';
 // import VmDisksSubtab from './components/vmDisksSubtab.jsx';
 import { appendClusterSwitch } from './components/topLevelViewSwitch.jsx';
-import { CONSOLE_TYPE_ID_MAP } from './config';
+import { CONSOLE_TYPE_ID_MAP, REQUIRED_OVIRT_API_VERSION } from './config';
+import { showFailedOvirtApiVersionCheck } from './installDialog'
 
 import { pollOvirt, forceNextOvirtPoll, oVirtIconToInternal } from './ovirt';
 
@@ -60,6 +61,7 @@ function buildVmFailHandler ({dispatch, vmName, msg, detailForNonexisting}) {
 let OVIRT_PROVIDER = {};
 OVIRT_PROVIDER = {
   name: 'oVirt',
+  ovirtApiMetadata: {}, // see checkApiVersion()
 
   actions: { // OVIRT_PROVIDER.actions is for reference only, it's expected to be replaced by init()
     virtMiddleware: (method, action) => {},
@@ -107,7 +109,7 @@ OVIRT_PROVIDER = {
     lazyCreateReactComponents();
     appendClusterSwitch(reduxStore);
 
-    return readConfiguration( doLogin );
+    return readConfiguration( () => doLogin(checkApiVersion) );
   },
 
   vmStateMap: null, // see init()
@@ -164,6 +166,11 @@ OVIRT_PROVIDER = {
    */
   SHUTDOWN_VM: (payload) => {
     logDebug(`SHUTDOWN_VM(payload: ${JSON.stringify(payload)})`);
+    if (!isOvirtApiCheckPassed()) {
+      logDebug('oVirt API version does not match, redirecting the action to Libvirt');
+      return OVIRT_PROVIDER.nextProvider.SHUTDOWN_VM(payload);
+    }
+
     const id = payload.id;
     const vmName = payload.name;
     forceNextOvirtPoll();
@@ -182,6 +189,11 @@ OVIRT_PROVIDER = {
    */
   FORCEOFF_VM: (payload) => {
     logDebug(`FORCEOFF_VM(payload: ${JSON.stringify(payload)})`);
+    if (!isOvirtApiCheckPassed()) {
+      logDebug('oVirt API version does not match, redirecting the action to Libvirt');
+      return OVIRT_PROVIDER.nextProvider.FORCEOFF_VM(payload);
+    }
+
     const id = payload.id;
     const vmName = payload.name;
     forceNextOvirtPoll();
@@ -194,6 +206,11 @@ OVIRT_PROVIDER = {
 
   REBOOT_VM: (payload) => {
     logDebug(`REBOOT_VM(payload: ${JSON.stringify(payload)})`);
+    if (!isOvirtApiCheckPassed()) {
+      logDebug('oVirt API version does not match, redirecting the action to Libvirt');
+      return OVIRT_PROVIDER.nextProvider.REBOOT_VM(payload);
+    }
+
     const vmName = payload.name;
     const id = payload.id;
     forceNextOvirtPoll();
@@ -211,6 +228,11 @@ OVIRT_PROVIDER = {
 
   START_VM: (payload) => {
     logDebug(`START_VM(payload: ${JSON.stringify(payload)})`);
+    if (!isOvirtApiCheckPassed()) {
+      logDebug('oVirt API version does not match, redirecting the action to Libvirt');
+      return OVIRT_PROVIDER.nextProvider.START_VM(payload);
+    }
+
     const id = payload.id;
     const vmName = payload.name;
     const hostName = payload.hostName; // optional
@@ -229,6 +251,11 @@ OVIRT_PROVIDER = {
 
   MIGRATE_VM: ({ vmId, vmName, hostId }) => {
     logDebug(`MIGRATE_VM(payload: {vmId: "${vmId}", hostId: "${hostId}"}`);
+    if (!isOvirtApiCheckPassed()) {
+      logDebug('oVirt API version does not match but the MIGRATE action is not supported by Libvirt provider, skipping' );
+      return () => {};
+    }
+
     const action = hostId ?
       `<action><host id="${hostId}"/></action>` :
       '<action/>';
@@ -268,7 +295,7 @@ OVIRT_PROVIDER = {
     const vmId = vm.id;
     const orig = vm.displays[type];
 
-    if (!isVmManagedByOvirt(OVIRT_PROVIDER.reduxStore.getState(), vmId)) {
+    if (!isVmManagedByOvirt(OVIRT_PROVIDER.reduxStore.getState(), vmId) || !isOvirtApiCheckPassed()) {
       return new Promise( (resolve, reject) => {
         resolve(orig);
       })
@@ -297,7 +324,7 @@ OVIRT_PROVIDER = {
     const vmId = payload.id;
     logDebug(`CONSOLE_VM: requesting .vv file from oVirt for vmId: ${vmId}, type: ${type}`);
 
-    if (!isVmManagedByOvirt(OVIRT_PROVIDER.reduxStore.getState(), vmId)) {
+    if (!isVmManagedByOvirt(OVIRT_PROVIDER.reduxStore.getState(), vmId) || !isOvirtApiCheckPassed()) {
       logDebug(`CONSOLE_VM: vmId: ${vmId} is not managed by oVirt, redirecting to Libvirt`);
       return OVIRT_PROVIDER.nextProvider.CONSOLE_VM(payload);
     }
@@ -324,6 +351,11 @@ OVIRT_PROVIDER = {
 
   CREATE_VM (payload) {
     logDebug(`CREATE_VM: payload = ${JSON.stringify(payload)}`);
+    if (!isOvirtApiCheckPassed()) {
+      logDebug('oVirt API version does not match, but CREATE_VM action is not supported by the Libvirt provider. Skipping.');
+      return () => {}
+    }
+
     const templateName = payload.templateName || 'blank'; // optional
     const clusterName = payload.clusterName || 'default'; // optional
     const { vm } = payload;
@@ -342,6 +374,11 @@ OVIRT_PROVIDER = {
 
   SUSPEND_VM ({ id, name }) {
     logDebug(`SUSPEND_VM(id=${id})`);
+    if (!isOvirtApiCheckPassed()) {
+      logDebug('oVirt API version does not match, but SUSPEND_VM action is not supported by the Libvirt provider. Skipping.');
+      return () => {}
+    }
+
     return (dispatch) => ovirtApiPost(
       `vms/${id}/suspend`,
       '<action><async>false</async></action>',
@@ -369,6 +406,7 @@ OVIRT_PROVIDER = {
 
   vmDisksActionsFactory: undefined,
   vmDisksColumns: undefined,
+
 /* Not needed now, keeping as an example
   vmDisksActionsFactory: ({vm}) => VmDisksSubtab.DummyActionsFactory({vm}), // listing-wide actions, see cockpit-components-listing.jsx
   vmDisksColumns: [
@@ -384,7 +422,60 @@ OVIRT_PROVIDER = {
     },
   ],
 */
-
 };
+
+function compareVersion (actual, required) {
+  logDebug(`compareVersion(), actual=${JSON.stringify(actual)}, required=${JSON.stringify(required)}`)
+
+  // assuming backward compatibility of oVirt API
+  if (actual.major >= required.major) {
+    if (actual.major === required.major) {
+      if (actual.minor < required.minor) {
+        return false
+      }
+    }
+    return true
+  }
+  return false
+}
+
+function checkApiVersion () {
+  logDebug('checkApiVersion() started');
+
+  const failHandler = (data, ex) => {
+    logError('checkApiVersion(): failed to load oVirt API metadata');
+    setOvirtApiCheckResult(false);
+  };
+
+  return ovirtApiGet(
+    ``, // just the /ovirt-engine/api
+    {},
+    failHandler
+  ).then(apiMetaData => {
+    logDebug('checkApiVersion() - API metadata retrieved: ', apiMetaData);
+
+    if (!(apiMetaData && apiMetaData['product_info'] && apiMetaData['product_info']['version'] &&
+      apiMetaData['product_info']['version']['major'] && apiMetaData['product_info']['version']['minor'])) {
+      console.error('Incompatible oVirt API version: ', apiMetaData)
+
+      setOvirtApiCheckResult(false);
+      return ;
+    }
+
+    const actual = apiMetaData['product_info']['version']
+    const passed = compareVersion({ major: parseInt(actual.major, 10), minor: parseInt(actual.minor, 10) }, REQUIRED_OVIRT_API_VERSION)
+    logDebug('checkApiVersion(): ', passed);
+    setOvirtApiCheckResult(passed);
+  })
+}
+
+function setOvirtApiCheckResult (passed) {
+  OVIRT_PROVIDER.ovirtApiMetadata.passed = passed;
+  showFailedOvirtApiVersionCheck(REQUIRED_OVIRT_API_VERSION)
+}
+
+export function isOvirtApiCheckPassed () {
+  return OVIRT_PROVIDER.ovirtApiMetadata.passed;
+}
 
 export default OVIRT_PROVIDER;

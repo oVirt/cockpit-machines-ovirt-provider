@@ -15,6 +15,11 @@ export const CONSOLE_TYPE_ID_MAP = { // TODO: replace by API call /vms/[ID]/grap
 
 export const CONSOLE_CLIENT_RESOURCES_URL = 'https://www.ovirt.org/documentation/admin-guide/virt/console-client-resources/'; // TODO: branding
 
+export const REQUIRED_OVIRT_API_VERSION = {
+  major: 4,
+  minor: 0, // TODO: do not commit, must be 0!
+};
+
 const CONFIG = { // will be dynamically replaced by content of CONFIG_FILE_URL within OVIRT_PROVIDER.init()
   /**
    * Set to false to turn off the debug logging

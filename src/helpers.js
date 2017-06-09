@@ -25,7 +25,7 @@ export function deferFunctionCall ( func ) {
 export function ovirtApiGet (resource, custHeaders, failHandler) {
   const headers = Object.assign({}, {
       'Accept': 'application/json',
-      'Content-Type': 'application/xml',
+      'Content-Type': 'application/xml', // TODO: change to JSON after verification
       'Authorization': 'Bearer ' + CONFIG.token
     },
     custHeaders);
