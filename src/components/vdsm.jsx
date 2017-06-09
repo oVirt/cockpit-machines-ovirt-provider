@@ -1,6 +1,7 @@
 import { getReact } from '../react.js';
 import { logDebug, logError } from '../helpers.js';
 import { VDSM_CONF_FILE } from '../config';
+import { highlightTopLevelSwitch } from './topLevelViewSwitch.jsx'
 
 const _ = (m) => m; // TODO: add translation
 
@@ -120,6 +121,7 @@ export function lazyCreateVdsmView() {
   }
 
   const VdsmView = () => {
+    highlightTopLevelSwitch('vdsm')
     return (<div>
       <VdsmConf />
     </div>);
