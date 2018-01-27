@@ -1,3 +1,8 @@
+**This project has been migrated** under [Cockpit](http://www.cockpit-project.org), became base for [cockpit-machines-provider](https://github.com/cockpit-project/cockpit/tree/master/pkg/ovirt).
+
+This source base is no more maintained.
+
+-----
 
 [![Build Status](https://travis-ci.org/oVirt/cockpit-machines-ovirt-provider.svg?branch=master)](https://travis-ci.org/oVirt/cockpit-machines-ovirt-provider)
 
