@@ -39,9 +39,8 @@ function LoginInProgressHtml() {
     return '<div />';
   }
 
-  return '<div class="ovirt-provider-login-in-progress">' +
-    '<div class="spinner spinner-sm"/>' +
-    `&nbsp;${_("oVirt authentication in progress ...")}` +
+  return '<div class="alert alert-warning ovirt-provider-login-in-progress">' +
+      `<strong>${_("oVirt authentication in progress ...")}</strong>` +
     '</div>';
 }
 
