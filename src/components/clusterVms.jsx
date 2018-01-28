@@ -68,7 +68,7 @@ export function lazyCreateClusterVms() {
     let buttons = null;
 
     const runButton = {
-      title: _("Run"),
+      title: _("Run In Cluster"),
       action: () => dispatch(startVm(vm)),
       id: `cluster-${vm.id}-run`
     };
@@ -83,7 +83,7 @@ export function lazyCreateClusterVms() {
     }
 
     if (['shut off', 'down'].indexOf(vm.state) >= 0) {
-      buttons = [runButton, runHereButton];
+      buttons = [runHereButton, runButton];
     }
 
     if (buttons) {
