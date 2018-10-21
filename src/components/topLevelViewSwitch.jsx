@@ -64,6 +64,19 @@ function hostClusterSwitchHtml() {
     '</div>';
 }
 
+export function highlightTopLevelSwitch(componentName) {
+  const allSwitches = [
+    '#ovirt-provider-toplevel-switch-host',
+    '#ovirt-provider-toplevel-switch-cluster',
+    '#ovirt-provider-toplevel-switch-vdsm',
+  ]
+  const open = [`#ovirt-provider-toplevel-switch-${componentName}`]
+  const close = allSwitches.filter( item => open.indexOf(item) < 0 )
+
+  open.forEach( item => $(item).addClass('ovirt-provider-topswitch-open'))
+  close.forEach( item => $(item).removeClass('ovirt-provider-topswitch-open'))
+}
+
 export function lazyCreateOVirtView() {
   const React = getReact();
   if (!React) {
@@ -111,6 +124,7 @@ export function lazyCreateOVirtView() {
       );
     }
 
+    highlightTopLevelSwitch('host')
     $('#app').show(); // Host Vms List will be rendered by parent cockpit:machine
     return null;
   };
